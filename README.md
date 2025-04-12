@@ -22,7 +22,7 @@ This application automatically fetches videos from YouTube channels and generate
 ### Prerequisites
 
 - Node.js & npm - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-- A YouTube Data API key (already included in the application)
+- A YouTube Data API key (currently using the one provided in the code)
 - WordPress site with REST API access (for publishing blog posts)
 
 ### Installation
@@ -44,19 +44,24 @@ npm run dev
 ### Configuration
 
 1. YouTube API:
-   - The application already includes a YouTube API key
+   - The application uses the following YouTube API key:
+     ```
+     AIzaSyB5JTPQKWa6Nm3gPHQlrI3ipxAdjVQTWrQ
+     ```
    - If you need to use your own key, update it in `src/utils/youtubeService.ts`
 
 2. WordPress Integration:
    - To configure WordPress posting, update the settings in `src/scripts/cronJob.js`
-   - Set your WordPress site URL, username, and application password
+   - Set your WordPress site URL, username, and application password for your coolestmags.xyz account
 
 ### Using the Application
 
 1. Start by navigating to the `/admin` page to add categories and channels
-2. On the home page, browse categories and channels to view videos
-3. Select a video to view its transcript and summary
-4. Generate blog posts with the "Generate Blog Post" button
+2. On the home page, browse categories from the dropdown and select a category to view its channels
+3. Click on a channel to view the latest 50 videos from that channel
+4. Select a video to view its transcript and summary in the right panel
+5. Generate blog posts with the "Generate Blog Post" button
+6. The application will automatically store all data in your browser's local storage
 
 ## Setting Up the Cron Job
 
@@ -94,14 +99,27 @@ The application includes a cron job script that can be scheduled to run automati
 9. In the Start in field, enter your project directory path
 10. Click Next and then Finish
 
-### Monitoring the Cron Job
+### Monitoring and Troubleshooting the Cron Job
+
+#### Checking Cron Job Status
 
 - Check the logs in `logs/cron.log` (Linux/Mac) or in the Task Scheduler history (Windows)
-- If the cron job stops working:
-  1. Check if Node.js is properly installed
-  2. Verify the paths in your cron configuration
-  3. Make sure the script has execution permissions
-  4. Check for errors in the log file
+- Use the following command to see if your cron job is scheduled correctly:
+  ```sh
+  crontab -l
+  ```
+
+#### Common Issues and Solutions
+
+1. **Cron job not running:**
+   - Check if Node.js is properly installed and accessible in your PATH
+   - Verify the paths in your cron configuration
+   - Make sure the script has execution permissions
+
+2. **Script errors:**
+   - Check the logs for error messages
+   - Ensure all required dependencies are installed
+   - Verify API keys are correct and have necessary permissions
 
 ### Restarting the Cron Job
 
@@ -117,6 +135,9 @@ sudo service cron start
 
 # Edit crontab if needed
 crontab -e
+
+# To remove all cron jobs if you need to start fresh
+crontab -r
 ```
 
 **Windows:**
@@ -124,6 +145,19 @@ crontab -e
 2. Find your "Blog Automator" task
 3. Right-click and select "Run" to run it immediately
 4. Check "Enable" if it's disabled
+5. To recreate the task, delete it first, then follow the setup steps again
+
+## WordPress Integration
+
+The application is configured to post blog content to your WordPress site at coolestmags.xyz:
+
+1. Set up the WordPress REST API credentials in `src/scripts/cronJob.js`
+2. The cron job will automatically post new content daily
+3. Each blog post will follow the format `StockName_ChannelName_YoutubeVideoId`
+4. The application uses WordPress REST API to post content, requiring:
+   - WordPress username
+   - Application password (created in WordPress admin)
+   - Site URL (coolestmags.xyz)
 
 ## Technology Stack
 
@@ -134,6 +168,16 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+- Axios for API requests
+
+## Adding More Features
+
+To extend this application:
+
+1. Add user authentication to protect the admin area
+2. Implement more advanced NLP for better summaries
+3. Add analytics to track blog post performance
+4. Integrate with social media platforms for sharing
 
 ## Deployment
 

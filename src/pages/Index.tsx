@@ -9,6 +9,7 @@ import VideoList from '@/components/VideoList';
 import VideoContent from '@/components/VideoContent';
 import { getCategories } from '@/utils/dataService';
 import { useIsMobile } from '@/hooks/use-mobile';
+import CategoryDropdown from '@/components/CategoryDropdown';
 
 const Index = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>(undefined);
@@ -17,11 +18,12 @@ const Index = () => {
   const [activePanel, setActivePanel] = useState<'categories' | 'channels' | 'videos' | 'content'>('categories');
   const isMobile = useIsMobile();
 
-  // Check if we have categories on initial load
+  // Check if we have categories on initial load and select the first one
   useEffect(() => {
     const categories = getCategories();
-    if (categories.length === 0) {
-      // No data, could redirect to admin
+    if (categories.length > 0) {
+      setSelectedCategoryId(categories[0].id);
+    } else {
       console.log('No categories found. You might want to add some in the Admin panel.');
     }
   }, []);
@@ -69,8 +71,8 @@ const Index = () => {
   // Desktop layout
   const renderDesktopLayout = () => (
     <div className="grid grid-cols-12 gap-4 h-[calc(100vh-120px)]">
-      <div className="col-span-2">
-        <CategoryList onCategorySelected={handleCategorySelected} />
+      <div className="col-span-1">
+        <CategoryDropdown onCategorySelected={handleCategorySelected} selectedCategoryId={selectedCategoryId} />
       </div>
       <div className="col-span-3">
         {selectedCategoryId && (
@@ -83,7 +85,7 @@ const Index = () => {
       <div className="col-span-3">
         <VideoList channelId={selectedChannelId} onVideoSelected={handleVideoSelected} />
       </div>
-      <div className="col-span-4">
+      <div className="col-span-5">
         <VideoContent videoId={selectedVideoId} />
       </div>
     </div>
@@ -95,7 +97,7 @@ const Index = () => {
       case 'categories':
         return (
           <div className="h-full">
-            <CategoryList onCategorySelected={handleCategorySelected} />
+            <CategoryDropdown onCategorySelected={handleCategorySelected} selectedCategoryId={selectedCategoryId} />
           </div>
         );
       case 'channels':
