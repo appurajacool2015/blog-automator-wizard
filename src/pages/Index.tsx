@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Settings } from "lucide-react";
-import CategoryList from '@/components/CategoryList';
 import ChannelList from '@/components/ChannelList';
 import VideoList from '@/components/VideoList';
 import VideoContent from '@/components/VideoContent';
@@ -71,21 +70,24 @@ const Index = () => {
   // Desktop layout
   const renderDesktopLayout = () => (
     <div className="grid grid-cols-12 gap-4 h-[calc(100vh-120px)]">
-      <div className="col-span-1">
-        <CategoryDropdown onCategorySelected={handleCategorySelected} selectedCategoryId={selectedCategoryId} />
+      <div className="col-span-2">
+        <div className="mb-4">
+          <CategoryDropdown onCategorySelected={handleCategorySelected} selectedCategoryId={selectedCategoryId} />
+        </div>
+        
+        <div className="h-[calc(100%-80px)]">
+          {selectedCategoryId && (
+            <ChannelList 
+              categoryId={selectedCategoryId} 
+              onChannelSelected={handleChannelSelected} 
+            />
+          )}
+        </div>
       </div>
-      <div className="col-span-3">
-        {selectedCategoryId && (
-          <ChannelList 
-            categoryId={selectedCategoryId} 
-            onChannelSelected={handleChannelSelected} 
-          />
-        )}
-      </div>
-      <div className="col-span-3">
+      <div className="col-span-4">
         <VideoList channelId={selectedChannelId} onVideoSelected={handleVideoSelected} />
       </div>
-      <div className="col-span-5">
+      <div className="col-span-6">
         <VideoContent videoId={selectedVideoId} />
       </div>
     </div>

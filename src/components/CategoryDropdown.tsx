@@ -36,16 +36,16 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({ selectedCategoryId,
   };
 
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-xl">Categories</CardTitle>
+    <Card className="shadow-sm">
+      <CardHeader className="pb-1 pt-3">
+        <CardTitle className="text-lg">Categories</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pb-3">
         <Select 
           value={selectedCategoryId} 
           onValueChange={handleCategoryChange}
         >
-          <SelectTrigger>
+          <SelectTrigger className="h-8 w-full">
             <SelectValue placeholder="Select a category" />
           </SelectTrigger>
           <SelectContent>
