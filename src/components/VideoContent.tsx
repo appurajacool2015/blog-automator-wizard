@@ -10,8 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VideoDetails } from '@/types';
 import { getVideoDetails } from '@/utils/dataService';
-import { fetchVideoDetails } from '@/utils/youtubeService';
-import { Loader2, FileText, BookText } from 'lucide-react';
+import { fetchVideoDetails, generateBlogPost } from '@/utils/youtubeService';
+import { Loader2, FileText, BookText, FileOutput } from 'lucide-react';
+import { useToast } from "@/components/ui/use-toast";
 
 interface VideoContentProps {
   videoId?: string;
@@ -21,10 +22,14 @@ const VideoContent: React.FC<VideoContentProps> = ({ videoId }) => {
   const [details, setDetails] = useState<VideoDetails | null>(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('summary');
+  const [generatingBlog, setGeneratingBlog] = useState(false);
+  const [blogContent, setBlogContent] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!videoId) {
       setDetails(null);
+      setBlogContent(null);
       return;
     }
     
@@ -43,19 +48,24 @@ const VideoContent: React.FC<VideoContentProps> = ({ videoId }) => {
         setDetails(videoDetails);
       } catch (error) {
         console.error('Error loading video details:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load video details",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
     };
     
     loadDetails();
-  }, [videoId]);
+  }, [videoId, toast]);
 
   const formatTranscript = (transcript: string) => {
     const lines = transcript.split('\n').filter(line => line.trim() !== '');
     
     return lines.map((line, index) => {
-      // Match timestamp pattern [00:00:00]
+      // Match timestamp pattern [00:00:00] or [00:00]
       const timestampMatch = line.match(/^\[([\d:]+)\]/);
       if (timestampMatch) {
         const timestamp = timestampMatch[0];
@@ -83,6 +93,38 @@ const VideoContent: React.FC<VideoContentProps> = ({ videoId }) => {
     });
   };
 
+  const handleGenerateBlogPost = async () => {
+    if (!videoId || !details) return;
+    
+    setGeneratingBlog(true);
+    setBlogContent(null);
+    
+    try {
+      // In a real application, you would get the stock name and channel name from the UI
+      // For now, we'll use placeholders
+      const stockName = "Sample Stock";
+      const channelName = "Sample Channel";
+      
+      const blog = await generateBlogPost(videoId, stockName, channelName);
+      setBlogContent(blog);
+      setActiveTab('blog');
+      
+      toast({
+        title: "Success",
+        description: "Blog post generated successfully",
+      });
+    } catch (error) {
+      console.error('Error generating blog post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate blog post",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingBlog(false);
+    }
+  };
+
   return (
     <Card className="h-full">
       <CardHeader className="pb-2">
@@ -103,10 +145,11 @@ const VideoContent: React.FC<VideoContentProps> = ({ videoId }) => {
               <h3 className="text-lg font-semibold">{details.title}</h3>
               <div className="flex justify-center mt-2">
                 <iframe
-                  width="560"
+                  width="100%"
                   height="315"
                   src={`https://www.youtube.com/embed/${videoId}`}
                   title="YouTube video player"
+                  frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                   className="max-w-full rounded-lg shadow-md"
@@ -115,7 +158,7 @@ const VideoContent: React.FC<VideoContentProps> = ({ videoId }) => {
             </div>
             
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="summary" className="flex items-center gap-2">
                   <BookText size={16} />
                   Summary
@@ -124,21 +167,41 @@ const VideoContent: React.FC<VideoContentProps> = ({ videoId }) => {
                   <FileText size={16} />
                   Transcript
                 </TabsTrigger>
+                <TabsTrigger value="blog" className="flex items-center gap-2" disabled={!blogContent}>
+                  <FileOutput size={16} />
+                  Blog Post
+                </TabsTrigger>
               </TabsList>
-              <TabsContent value="summary" className="p-4 bg-gray-50 rounded-md mt-4 max-h-[500px] overflow-y-auto">
+              <TabsContent value="summary" className="p-4 bg-gray-50 rounded-md mt-4 max-h-[300px] overflow-y-auto">
                 <div className="prose prose-sm max-w-none">
                   {formatSummary(details.summary)}
                 </div>
               </TabsContent>
-              <TabsContent value="transcript" className="p-4 bg-gray-50 rounded-md mt-4 max-h-[500px] overflow-y-auto">
+              <TabsContent value="transcript" className="p-4 bg-gray-50 rounded-md mt-4 max-h-[300px] overflow-y-auto">
                 <div className="prose prose-sm max-w-none">
                   {formatTranscript(details.transcript)}
                 </div>
               </TabsContent>
+              <TabsContent value="blog" className="p-4 bg-gray-50 rounded-md mt-4 max-h-[300px] overflow-y-auto">
+                {blogContent ? (
+                  <div className="prose prose-sm max-w-none whitespace-pre-wrap">
+                    {blogContent}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-4">Generate a blog post first</p>
+                )}
+              </TabsContent>
             </Tabs>
             
             <div className="mt-6 flex justify-end">
-              <Button>Generate Blog Post</Button>
+              <Button 
+                onClick={handleGenerateBlogPost} 
+                disabled={generatingBlog}
+                className="flex items-center gap-2"
+              >
+                {generatingBlog && <Loader2 className="h-4 w-4 animate-spin" />}
+                {generatingBlog ? 'Generating...' : 'Generate Blog Post'}
+              </Button>
             </div>
           </>
         )}

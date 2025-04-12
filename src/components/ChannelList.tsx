@@ -163,7 +163,7 @@ const ChannelList: React.FC<ChannelListProps> = ({
           <ul className="space-y-2">
             {channels.map((channel) => (
               <li key={channel.id}>
-                {editingChannel?.id === channel.id ? (
+                {editingChannel?.id === channel.id && isAdmin ? (
                   <div className="space-y-2 p-2 border rounded-md">
                     <Input
                       value={editName}
@@ -190,8 +190,8 @@ const ChannelList: React.FC<ChannelListProps> = ({
                     onClick={() => handleChannelClick(channel.id)}
                   >
                     <div className="flex items-center gap-2">
-                      <Youtube size={18} className="text-brand-red" />
-                      <span>{channel.name}</span>
+                      <Youtube size={16} className="text-red-500" />
+                      <span className="font-medium">{channel.name}</span>
                     </div>
                     
                     {isAdmin && (

@@ -68,24 +68,22 @@ const Index = () => {
 
   // Desktop layout
   const renderDesktopLayout = () => (
-    <div className="three-panel-layout">
-      <div className="panel">
-        <div className="flex flex-col h-full">
-          <CategoryList onCategorySelected={handleCategorySelected} />
-          {selectedCategoryId && (
-            <div className="mt-4 flex-1">
-              <ChannelList 
-                categoryId={selectedCategoryId} 
-                onChannelSelected={handleChannelSelected} 
-              />
-            </div>
-          )}
-        </div>
+    <div className="grid grid-cols-12 gap-4 h-[calc(100vh-120px)]">
+      <div className="col-span-2">
+        <CategoryList onCategorySelected={handleCategorySelected} />
       </div>
-      <div className="panel">
+      <div className="col-span-3">
+        {selectedCategoryId && (
+          <ChannelList 
+            categoryId={selectedCategoryId} 
+            onChannelSelected={handleChannelSelected} 
+          />
+        )}
+      </div>
+      <div className="col-span-3">
         <VideoList channelId={selectedChannelId} onVideoSelected={handleVideoSelected} />
       </div>
-      <div className="panel">
+      <div className="col-span-4">
         <VideoContent videoId={selectedVideoId} />
       </div>
     </div>
