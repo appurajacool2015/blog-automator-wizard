@@ -1,4 +1,3 @@
-
 # Blog Automator Wizard - YouTube to WordPress Blog Automation
 
 This application automatically fetches videos from YouTube channels and generates blog posts to be published on WordPress. It provides a responsive user interface for managing categories, channels, and videos, as well as for viewing video transcripts and summaries.
@@ -22,7 +21,7 @@ This application automatically fetches videos from YouTube channels and generate
 ### Prerequisites
 
 - Node.js & npm - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-- A YouTube Data API key (currently using the one provided in the code)
+- A YouTube Data API key (required for fetching videos and channel data)
 - WordPress site with REST API access (for publishing blog posts)
 
 ### Installation
@@ -44,11 +43,8 @@ npm run dev
 ### Configuration
 
 1. YouTube API:
-   - The application uses the following YouTube API key:
-     ```
-     AIzaSyB5JTPQKWa6Nm3gPHQlrI3ipxAdjVQTWrQ
-     ```
-   - If you need to use your own key, update it in `src/utils/youtubeService.ts`
+   - You'll need to obtain a YouTube Data API key from the [Google Cloud Console](https://console.cloud.google.com/)
+   - Once you have your API key, update it in `src/utils/youtubeService.ts`
 
 2. WordPress Integration:
    - To configure WordPress posting, update the settings in `src/scripts/cronJob.js`

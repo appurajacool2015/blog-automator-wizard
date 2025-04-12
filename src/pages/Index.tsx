@@ -70,7 +70,7 @@ const Index = () => {
   // Desktop layout
   const renderDesktopLayout = () => (
     <div className="grid grid-cols-12 gap-4 h-[calc(100vh-120px)]">
-      <div className="col-span-2">
+      <div className="col-span-3">
         <div className="mb-4">
           <CategoryDropdown onCategorySelected={handleCategorySelected} selectedCategoryId={selectedCategoryId} />
         </div>
@@ -87,7 +87,7 @@ const Index = () => {
       <div className="col-span-4">
         <VideoList channelId={selectedChannelId} onVideoSelected={handleVideoSelected} />
       </div>
-      <div className="col-span-6">
+      <div className="col-span-5">
         <VideoContent videoId={selectedVideoId} />
       </div>
     </div>
