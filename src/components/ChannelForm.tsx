@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { addChannel, getCategories } from '@/utils/dataService';
+import { addChannel, fetchCategories } from '@/utils/apiService';
 import { Category } from '@/types';
 
 interface ChannelFormProps {
@@ -26,7 +26,20 @@ const ChannelForm: React.FC<ChannelFormProps> = ({ onChannelAdded }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    setCategories(getCategories());
+    const loadCategories = async () => {
+      try {
+        const categoriesList = await fetchCategories();
+        setCategories(categoriesList);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch categories",
+          variant: "destructive",
+        });
+      }
+    };
+    
+    loadCategories();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,7 +57,11 @@ const ChannelForm: React.FC<ChannelFormProps> = ({ onChannelAdded }) => {
     setIsSubmitting(true);
     
     try {
-      addChannel(channelName.trim(), channelId.trim(), categoryId);
+      const selectedCategory = categories.find(c => c.id === categoryId);
+      if (!selectedCategory) {
+        throw new Error('Selected category not found');
+      }
+      await addChannel(channelId.trim(), channelName.trim(), selectedCategory.name);
       setChannelName('');
       setChannelId('');
       toast({

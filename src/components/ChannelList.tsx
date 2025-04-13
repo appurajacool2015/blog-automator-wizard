@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { Trash, Edit, Youtube } from "lucide-react";
-import { getChannelsByCategory, deleteChannel, updateChannel } from '@/utils/dataService';
+import { fetchChannels, deleteChannel, addChannel } from '@/utils/apiService';
 import { Channel } from '@/types';
 import { Input } from '@/components/ui/input';
 
@@ -50,56 +50,55 @@ const ChannelList: React.FC<ChannelListProps> = ({
       return;
     }
     
-    const fetchChannels = () => {
-      const channelsList = getChannelsByCategory(categoryId);
-      setChannels(channelsList);
-      
-      // Select the first channel if none is selected and we have channels
-      if (channelsList.length > 0 && !selectedChannelId) {
-        setSelectedChannelId(channelsList[0].id);
-        onChannelSelected?.(channelsList[0].id);
+    const loadChannels = async () => {
+      try {
+        const channelsList = await fetchChannels(categoryId);
+        setChannels(channelsList);
+        
+        // Select the first channel if none is selected and we have channels
+        if (channelsList.length > 0 && !selectedChannelId) {
+          setSelectedChannelId(channelsList[0].id);
+          onChannelSelected?.(channelsList[0].id);
+        }
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch channels",
+          variant: "destructive",
+        });
       }
     };
     
-    fetchChannels();
+    loadChannels();
   }, [categoryId, refreshTrigger, onChannelSelected, selectedChannelId]);
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     try {
-      const success = deleteChannel(id);
+      await deleteChannel(id);
+      toast({
+        title: "Success",
+        description: "Channel deleted successfully",
+      });
       
-      if (success) {
-        toast({
-          title: "Success",
-          description: "Channel deleted successfully",
-        });
+      // Update the channels list
+      if (categoryId) {
+        const updatedChannels = await fetchChannels(categoryId);
+        setChannels(updatedChannels);
         
-        // Update the channels list
-        if (categoryId) {
-          const updatedChannels = getChannelsByCategory(categoryId);
-          setChannels(updatedChannels);
-          
-          // If the deleted channel was selected, select the first available one
-          if (id === selectedChannelId) {
-            if (updatedChannels.length > 0) {
-              setSelectedChannelId(updatedChannels[0].id);
-              onChannelSelected?.(updatedChannels[0].id);
-            } else {
-              setSelectedChannelId(null);
-            }
+        // If the deleted channel was selected, select the first available one
+        if (id === selectedChannelId) {
+          if (updatedChannels.length > 0) {
+            setSelectedChannelId(updatedChannels[0].id);
+            onChannelSelected?.(updatedChannels[0].id);
+          } else {
+            setSelectedChannelId(null);
           }
         }
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to delete channel",
-          variant: "destructive",
-        });
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "An unexpected error occurred",
+        description: "Failed to delete channel",
         variant: "destructive",
       });
     }
@@ -111,17 +110,13 @@ const ChannelList: React.FC<ChannelListProps> = ({
     setEditYoutubeId(channel.youtubeId);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editingChannel || !categoryId) return;
     
     try {
-      const updatedChannel = { 
-        ...editingChannel, 
-        name: editName.trim(),
-        youtubeId: editYoutubeId.trim() 
-      };
-      
-      updateChannel(updatedChannel);
+      // Delete the old channel and create a new one
+      await deleteChannel(editingChannel.id);
+      await addChannel(editYoutubeId.trim(), editName.trim(), categoryId);
       
       toast({
         title: "Success",
@@ -129,7 +124,8 @@ const ChannelList: React.FC<ChannelListProps> = ({
       });
       
       // Update the channels list
-      setChannels(getChannelsByCategory(categoryId));
+      const updatedChannels = await fetchChannels(categoryId);
+      setChannels(updatedChannels);
       setEditingChannel(null);
     } catch (error) {
       toast({

@@ -1,6 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   Card, 
   CardContent,
@@ -20,7 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { Trash, Edit, Folder } from "lucide-react";
-import { getCategories, deleteCategory, updateCategory } from '@/utils/dataService';
+import { fetchCategories, deleteCategory, createCategory, updateCategory } from '@/utils/apiService';
 import { Category } from '@/types';
 import { Input } from '@/components/ui/input';
 
@@ -42,54 +49,53 @@ const CategoryList: React.FC<CategoryListProps> = ({
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchCategories = () => {
-      const categoriesList = getCategories();
-      setCategories(categoriesList);
-      
-      // Select the first category if none is selected
-      if (categoriesList.length > 0 && !selectedCategoryId) {
-        setSelectedCategoryId(categoriesList[0].id);
-        onCategorySelected?.(categoriesList[0].id);
+    const loadCategories = async () => {
+      try {
+        const categoriesList = await fetchCategories();
+        setCategories(categoriesList);
+        
+        // Select the first category if none is selected
+        if (categoriesList.length > 0 && !selectedCategoryId) {
+          setSelectedCategoryId(categoriesList[0].id);
+          onCategorySelected?.(categoriesList[0].id);
+        }
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch categories",
+          variant: "destructive",
+        });
       }
     };
     
-    fetchCategories();
+    loadCategories();
   }, [refreshTrigger, onCategorySelected, selectedCategoryId]);
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (name: string) => {
     try {
-      const success = deleteCategory(id);
+      await deleteCategory(name);
+      toast({
+        title: "Success",
+        description: "Category deleted successfully",
+      });
       
-      if (success) {
-        toast({
-          title: "Success",
-          description: "Category deleted successfully",
-        });
-        
-        // Update the categories list
-        setCategories(getCategories());
-        
-        // If the deleted category was selected, select the first available one
-        if (id === selectedCategoryId) {
-          const remainingCategories = getCategories();
-          if (remainingCategories.length > 0) {
-            setSelectedCategoryId(remainingCategories[0].id);
-            onCategorySelected?.(remainingCategories[0].id);
-          } else {
-            setSelectedCategoryId(null);
-          }
+      // Refresh the categories list
+      const categoriesList = await fetchCategories();
+      setCategories(categoriesList);
+      
+      // If the deleted category was selected, select the first available one
+      if (name === selectedCategoryId) {
+        if (categoriesList.length > 0) {
+          setSelectedCategoryId(categoriesList[0].id);
+          onCategorySelected?.(categoriesList[0].id);
+        } else {
+          setSelectedCategoryId(null);
         }
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to delete category",
-          variant: "destructive",
-        });
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "An unexpected error occurred",
+        description: "Failed to delete category",
         variant: "destructive",
       });
     }
@@ -100,19 +106,19 @@ const CategoryList: React.FC<CategoryListProps> = ({
     setEditName(category.name);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editingCategory) return;
     
     try {
-      const updatedCategory = { ...editingCategory, name: editName.trim() };
-      updateCategory(updatedCategory);
+      await updateCategory(editingCategory.name, editName.trim());
       
       toast({
         title: "Success",
         description: "Category updated successfully",
       });
       
-      setCategories(getCategories());
+      const categoriesList = await fetchCategories();
+      setCategories(categoriesList);
       setEditingCategory(null);
     } catch (error) {
       toast({
@@ -141,11 +147,30 @@ const CategoryList: React.FC<CategoryListProps> = ({
         {categories.length === 0 ? (
           <p className="text-gray-500 text-center py-4">No categories found</p>
         ) : (
-          <ul className="space-y-2">
-            {categories.map((category) => (
-              <li key={category.id}>
-                {editingCategory?.id === category.id ? (
-                  <div className="flex items-center gap-2 p-2 border rounded-md">
+          <div className="space-y-4">
+            <Select
+              value={selectedCategoryId || undefined}
+              onValueChange={handleCategoryClick}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    <div className="flex items-center gap-2">
+                      <Folder size={18} className="text-brand-blue" />
+                      <span>{category.name}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {isAdmin && selectedCategoryId && (
+              <div className="flex justify-end gap-2">
+                {editingCategory ? (
+                  <div className="flex items-center gap-2 w-full">
                     <Input
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
@@ -156,62 +181,49 @@ const CategoryList: React.FC<CategoryListProps> = ({
                     <Button size="sm" variant="outline" onClick={handleCancelEdit}>Cancel</Button>
                   </div>
                 ) : (
-                  <div 
-                    className={`flex items-center justify-between p-2 border rounded-md hover:bg-gray-50 cursor-pointer ${
-                      category.id === selectedCategoryId ? 'bg-blue-50 border-blue-300' : ''
-                    }`}
-                    onClick={() => handleCategoryClick(category.id)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Folder size={18} className="text-brand-blue" />
-                      <span>{category.name}</span>
-                    </div>
-                    
-                    {isAdmin && (
-                      <div className="flex items-center gap-1">
-                        <Button size="sm" variant="ghost" onClick={(e) => {
-                          e.stopPropagation();
-                          handleEdit(category);
-                        }}>
-                          <Edit size={16} />
+                  <>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => handleEdit(categories.find(c => c.id === selectedCategoryId)!)}
+                    >
+                      <Edit size={16} className="mr-2" />
+                      Edit
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="sm" variant="outline" className="text-red-500 hover:text-red-600">
+                          <Trash size={16} className="mr-2" />
+                          Delete
                         </Button>
-                        
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button 
-                              size="sm" 
-                              variant="ghost" 
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <Trash size={16} className="text-red-500" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This will delete the category and all associated channels.
-                                This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction 
-                                className="bg-red-500 hover:bg-red-600"
-                                onClick={() => handleDelete(category.id)}
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    )}
-                  </div>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will delete the category and all associated channels.
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            className="bg-red-500 hover:bg-red-600"
+                            onClick={() => {
+                              const category = categories.find(c => c.id === selectedCategoryId);
+                              if (category) handleDelete(category.name);
+                            }}
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </>
                 )}
-              </li>
-            ))}
-          </ul>
+              </div>
+            )}
+          </div>
         )}
       </CardContent>
     </Card>

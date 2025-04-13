@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { addCategory } from '@/utils/dataService';
+import { createCategory } from '@/utils/apiService';
 
 interface CategoryFormProps {
   onCategoryAdded: () => void;
@@ -29,7 +29,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ onCategoryAdded }) => {
     setIsSubmitting(true);
     
     try {
-      addCategory(categoryName.trim());
+      await createCategory(categoryName.trim());
       setCategoryName('');
       toast({
         title: "Success",
