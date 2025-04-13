@@ -65,19 +65,17 @@ export const fetchVideoDetails = async (videoId: string): Promise<VideoDetails> 
       channelTitle = videoInfoResponse.data.items[0].snippet.channelTitle;
     }
     
-    // Try to fetch transcript using free API
+    // Fetch transcript from our cached endpoint
     let transcript = '';
     let language = 'en';
     
     try {
-      // This is a mock of transcript fetching - in real applications you'd use an actual API
-      // For demonstration, we'll use a simple fetch to a free API endpoint
-      const transcriptResponse = await fetch(`https://example-transcript-api.com/transcript/${videoId}`);
-      
-      // Since the API probably won't work, we'll default to mock data
+      const transcriptResponse = await fetch(`/api/videos/${videoId}/transcript`);
       if (!transcriptResponse.ok) {
-        transcript = generateMockTranscript(title);
+        throw new Error('Failed to fetch transcript');
       }
+      const transcriptData = await transcriptResponse.json();
+      transcript = transcriptData.transcript;
     } catch (transcriptError) {
       console.warn('Could not fetch transcript, using mock data:', transcriptError);
       transcript = generateMockTranscript(title);
