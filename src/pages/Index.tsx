@@ -6,7 +6,7 @@ import { Settings } from "lucide-react";
 import ChannelList from '@/components/ChannelList';
 import VideoList from '@/components/VideoList';
 import VideoContent from '@/components/VideoContent';
-import { getCategories } from '@/utils/dataService';
+import { fetchCategories } from '@/utils/apiService';
 import { useIsMobile } from '@/hooks/use-mobile';
 import CategoryDropdown from '@/components/CategoryDropdown';
 
@@ -19,12 +19,19 @@ const Index = () => {
 
   // Check if we have categories on initial load and select the first one
   useEffect(() => {
-    const categories = getCategories();
-    if (categories.length > 0) {
-      setSelectedCategoryId(categories[0].id);
-    } else {
-      console.log('No categories found. You might want to add some in the Admin panel.');
-    }
+    const loadCategories = async () => {
+      try {
+        const categories = await fetchCategories();
+        if (categories.length > 0) {
+          setSelectedCategoryId(categories[0].id);
+        } else {
+          console.log('No categories found. You might want to add some in the Admin panel.');
+        }
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+      }
+    };
+    loadCategories();
   }, []);
 
   const handleCategorySelected = (categoryId: string) => {

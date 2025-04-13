@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getCategories } from '@/utils/dataService';
+import { fetchCategories } from '@/utils/apiService';
 import { Category } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
@@ -22,13 +22,21 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({ selectedCategoryId,
   const [categories, setCategories] = useState<Category[]>([]);
   
   useEffect(() => {
-    const categoryList = getCategories();
-    setCategories(categoryList);
+    const loadCategories = async () => {
+      try {
+        const categoryList = await fetchCategories();
+        setCategories(categoryList);
+        
+        // If we have categories but none is selected, select the first one
+        if (categoryList.length > 0 && !selectedCategoryId) {
+          onCategorySelected(categoryList[0].id);
+        }
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+      }
+    };
     
-    // If we have categories but none is selected, select the first one
-    if (categoryList.length > 0 && !selectedCategoryId) {
-      onCategorySelected(categoryList[0].id);
-    }
+    loadCategories();
   }, [selectedCategoryId, onCategorySelected]);
 
   const handleCategoryChange = (value: string) => {
