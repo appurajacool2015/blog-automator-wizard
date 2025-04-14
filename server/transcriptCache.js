@@ -1,6 +1,8 @@
-const fs = require('fs').promises;
-const path = require('path');
+import { promises as fs } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CACHE_FILE = path.join(__dirname, '..', 'data', 'cache', 'transcripts.json');
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
@@ -62,4 +64,5 @@ class TranscriptCache {
   }
 }
 
-module.exports = new TranscriptCache();
+const transcriptCache = new TranscriptCache();
+export default transcriptCache;

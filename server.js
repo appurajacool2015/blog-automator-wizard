@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import pkg from 'youtube-transcript';
 const { getSubtitles } = pkg;
 import { getCachedVideos, updateCache } from './server/cache.js';
-import transcriptCache from './server/transcriptCache';
+import transcriptCache from './server/transcriptCache.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -296,69 +296,21 @@ app.get('/api/video/:videoId', async (req, res) => {
 app.get('/api/videos/:videoId/transcript', async (req, res) => {
   try {
     const { videoId } = req.params;
-
+    
     // Check cache first
     const cachedTranscript = transcriptCache.get(videoId);
     if (cachedTranscript) {
-      console.log(`Returning cached transcript for video ${videoId}`);
-      return res.json(cachedTranscript);
+      return res.json({ transcript: cachedTranscript });
     }
-
-    // Fetch video details from YouTube API
-    const videoResponse = await axios.get(`https://www.googleapis.com/youtube/v3/videos`, {
-      params: {
-        part: 'snippet',
-        id: videoId,
-        key: process.env.YOUTUBE_API_KEY
-      }
-    });
-
-    if (!videoResponse.data.items || videoResponse.data.items.length === 0) {
-      return res.status(404).json({ error: 'Video not found' });
-    }
-
-    // Get captions for the video
-    const captionsResponse = await axios.get(`https://www.googleapis.com/youtube/v3/captions`, {
-      params: {
-        part: 'snippet',
-        videoId: videoId,
-        key: process.env.YOUTUBE_API_KEY
-      }
-    });
-
-    let transcript = '';
-    if (captionsResponse.data.items && captionsResponse.data.items.length > 0) {
-      // Get the first available caption track
-      const captionId = captionsResponse.data.items[0].id;
-      
-      // Download the caption track
-      const captionResponse = await axios.get(
-        `https://www.googleapis.com/youtube/v3/captions/${captionId}`, {
-          params: {
-            tfmt: 'srt',
-            key: process.env.YOUTUBE_API_KEY
-          },
-          headers: {
-            Authorization: `Bearer ${process.env.YOUTUBE_API_KEY}`
-          }
-        }
-      );
-
-      transcript = captionResponse.data;
-    } else {
-      transcript = 'No captions available for this video.';
-    }
-
-    const result = {
-      videoId,
-      title: videoResponse.data.items[0].snippet.title,
-      transcript
-    };
-
-    // Cache the result
-    await transcriptCache.set(videoId, result);
-
-    res.json(result);
+    
+    // If not in cache, fetch from YouTube
+    const subtitles = await getSubtitles({ videoId });
+    const transcript = subtitles.map(sub => sub.text).join(' ');
+    
+    // Cache the transcript
+    await transcriptCache.set(videoId, transcript);
+    
+    res.json({ transcript });
   } catch (error) {
     console.error('Error fetching transcript:', error);
     res.status(500).json({ error: 'Failed to fetch transcript' });

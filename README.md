@@ -2,6 +2,82 @@
 
 This application automatically fetches videos from YouTube channels and generates blog posts to be published on WordPress. It provides a responsive user interface for managing categories, channels, and videos, as well as for viewing video transcripts and summaries.
 
+## 🚀 How to Run the Application (Super Easy!)
+
+The application has two parts that work together:
+1. A frontend (what you see in the browser)
+2. A backend (the server that does the work)
+
+### 🎮 Running Everything Together (Easiest Way!)
+
+Just type this command in your terminal:
+```bash
+npm run dev:full
+```
+
+This will start:
+- Frontend website at http://localhost:8080 (or sometimes http://localhost:8081)
+- Backend server at http://localhost:3004
+
+💡 **Tip**: If port 8080 is busy, the app will automatically try port 8081. Just check your terminal to see which port it's using!
+
+### 🖥️ Running Just the Frontend
+
+If you only want to see the website, type:
+```bash
+npm run dev
+```
+
+This will start the website at http://localhost:8080 (or http://localhost:8081)
+
+### ⚙️ Running Just the Backend
+
+If you only want to run the server, type:
+```bash
+npm run server
+```
+
+This will start the server at http://localhost:3004
+
+## 📁 What's Inside the Project?
+
+Think of the project like a house with different rooms:
+
+```
+├── src/                    # The frontend (what you see)
+│   ├── components/        # Like building blocks for the website
+│   ├── pages/            # Different pages of the website
+│   ├── utils/            # Helper tools
+│   └── App.tsx           # The main website file
+├── server/               # The backend (the brain)
+│   ├── cache.js         # Memory for videos
+│   └── transcriptCache.js # Memory for video transcripts
+├── data/                 # Where we store information
+│   ├── cache/           # Temporary storage
+│   └── channels.json    # List of channels and categories
+├── public/              # Pictures and other static stuff
+└── package.json         # List of tools we need
+```
+
+## 🛠️ What Makes It Work?
+
+1. **Frontend (The Pretty Part)**
+   - Built with React (like LEGO blocks for websites)
+   - Uses shadcn-ui (beautiful buttons and forms)
+   - Has different pages you can navigate between
+   - Fetches data from the backend
+
+2. **Backend (The Brain)**
+   - Handles all the YouTube video stuff
+   - Manages categories and channels
+   - Stores information about videos
+   - Works with WordPress
+
+3. **Data Storage (The Memory)**
+   - Keeps track of your channels and categories
+   - Remembers video transcripts for 24 hours
+   - Saves everything in files on your computer
+
 ## Project info
 
 **URL**: https://lovable.dev/projects/9fedb541-a6bc-48c2-81db-0c5f9a42d057
