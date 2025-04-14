@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   Card, 
@@ -13,6 +12,7 @@ import { getVideoDetails } from '@/utils/dataService';
 import { fetchVideoDetails, generateBlogPost } from '@/utils/youtubeService';
 import { Loader2, FileText, BookText, FileOutput } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
+import VideoDetailsComponent from './VideoDetails';
 
 interface VideoContentProps {
   videoId?: string;
@@ -93,6 +93,18 @@ const VideoContent: React.FC<VideoContentProps> = ({ videoId }) => {
     });
   };
 
+  const formatBlogContent = (content: string) => {
+    const lines = content.split('\n').filter(line => line.trim() !== '');
+    
+    return lines.map((line, index) => {
+      // Check for headings (lines that end with a colon)
+      if (line.endsWith(':')) {
+        return <h3 key={index} className="text-lg font-semibold mb-2">{line}</h3>;
+      }
+      return <p key={index} className="mb-2">{line}</p>;
+    });
+  };
+
   const handleGenerateBlogPost = async () => {
     if (!videoId || !details) return;
     
@@ -127,83 +139,76 @@ const VideoContent: React.FC<VideoContentProps> = ({ videoId }) => {
 
   return (
     <Card className="h-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-xl">Content</CardTitle>
+      <CardHeader>
+        <CardTitle>Video Content</CardTitle>
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div className="flex items-center justify-center py-10">
-            <Loader2 className="animate-spin h-8 w-8 text-gray-400" />
+          <div className="flex items-center justify-center h-32">
+            <Loader2 className="h-8 w-8 animate-spin" />
           </div>
-        ) : !videoId ? (
-          <p className="text-gray-500 text-center py-4">Select a video first</p>
-        ) : !details ? (
-          <p className="text-gray-500 text-center py-4">No details available for this video</p>
-        ) : (
+        ) : videoId ? (
           <>
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold">{details.title}</h3>
-              <div className="flex justify-center mt-2">
-                <iframe
-                  width="100%"
-                  height="315"
-                  src={`https://www.youtube.com/embed/${videoId}`}
-                  title="YouTube video player"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="max-w-full rounded-lg shadow-md"
-                ></iframe>
-              </div>
-            </div>
-            
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="summary" className="flex items-center gap-2">
-                  <BookText size={16} />
+                <TabsTrigger value="summary">
+                  <BookText className="h-4 w-4 mr-2" />
                   Summary
                 </TabsTrigger>
-                <TabsTrigger value="transcript" className="flex items-center gap-2">
-                  <FileText size={16} />
+                <TabsTrigger value="transcript">
+                  <FileText className="h-4 w-4 mr-2" />
                   Transcript
                 </TabsTrigger>
-                <TabsTrigger value="blog" className="flex items-center gap-2" disabled={!blogContent}>
-                  <FileOutput size={16} />
-                  Blog Post
+                <TabsTrigger value="blog">
+                  <FileOutput className="h-4 w-4 mr-2" />
+                  Blog
                 </TabsTrigger>
               </TabsList>
-              <TabsContent value="summary" className="p-4 bg-gray-50 rounded-md mt-4 max-h-[300px] overflow-y-auto">
-                <div className="prose prose-sm max-w-none">
-                  {formatSummary(details.summary)}
-                </div>
-              </TabsContent>
-              <TabsContent value="transcript" className="p-4 bg-gray-50 rounded-md mt-4 max-h-[300px] overflow-y-auto">
-                <div className="prose prose-sm max-w-none">
-                  {formatTranscript(details.transcript)}
-                </div>
-              </TabsContent>
-              <TabsContent value="blog" className="p-4 bg-gray-50 rounded-md mt-4 max-h-[300px] overflow-y-auto">
-                {blogContent ? (
-                  <div className="prose prose-sm max-w-none whitespace-pre-wrap">
-                    {blogContent}
+              
+              <TabsContent value="summary" className="mt-4">
+                {details?.summary ? (
+                  <div className="prose prose-sm max-w-none">
+                    {formatSummary(details.summary)}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-center py-4">Generate a blog post first</p>
+                  <p className="text-sm text-muted-foreground">No summary available.</p>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="transcript" className="mt-4">
+                <VideoDetailsComponent videoId={videoId} />
+              </TabsContent>
+              
+              <TabsContent value="blog" className="mt-4">
+                {blogContent ? (
+                  <div className="prose prose-sm max-w-none">
+                    {formatBlogContent(blogContent)}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Generate a blog post from the video content.
+                    </p>
+                    <Button 
+                      onClick={handleGenerateBlogPost}
+                      disabled={generatingBlog}
+                    >
+                      {generatingBlog ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        'Generate Blog Post'
+                      )}
+                    </Button>
+                  </div>
                 )}
               </TabsContent>
             </Tabs>
-            
-            <div className="mt-6 flex justify-end">
-              <Button 
-                onClick={handleGenerateBlogPost} 
-                disabled={generatingBlog}
-                className="flex items-center gap-2"
-              >
-                {generatingBlog && <Loader2 className="h-4 w-4 animate-spin" />}
-                {generatingBlog ? 'Generating...' : 'Generate Blog Post'}
-              </Button>
-            </div>
           </>
+        ) : (
+          <p className="text-sm text-muted-foreground">Select a video to view its content.</p>
         )}
       </CardContent>
     </Card>

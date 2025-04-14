@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -101,89 +100,49 @@ const Index = () => {
   );
 
   // Mobile layout
-  const renderMobileLayout = () => {
-    switch (activePanel) {
-      case 'categories':
-        return (
-          <div className="h-full">
-            <CategoryDropdown onCategorySelected={handleCategorySelected} selectedCategoryId={selectedCategoryId} />
-          </div>
-        );
-      case 'channels':
-        return (
-          <div className="h-full">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="mb-4" 
-              onClick={handleBackClick}
-            >
-              Back to Categories
-            </Button>
-            <ChannelList 
-              categoryId={selectedCategoryId} 
-              onChannelSelected={handleChannelSelected} 
-            />
-          </div>
-        );
-      case 'videos':
-        return (
-          <div className="h-full">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="mb-4" 
-              onClick={handleBackClick}
-            >
-              Back to Channels
-            </Button>
-            <VideoList 
-              channelId={selectedChannelId} 
-              onVideoSelected={handleVideoSelected} 
-            />
-          </div>
-        );
-      case 'content':
-        return (
-          <div className="h-full">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="mb-4" 
-              onClick={handleBackClick}
-            >
-              Back to Videos
-            </Button>
-            <VideoContent videoId={selectedVideoId} />
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
+  const renderMobileLayout = () => (
+    <div className="h-[calc(100vh-120px)]">
+      {activePanel === 'categories' && (
+        <div className="mb-4">
+          <CategoryDropdown onCategorySelected={handleCategorySelected} selectedCategoryId={selectedCategoryId} />
+        </div>
+      )}
+      
+      {activePanel === 'channels' && selectedCategoryId && (
+        <ChannelList 
+          categoryId={selectedCategoryId} 
+          onChannelSelected={handleChannelSelected} 
+        />
+      )}
+      
+      {activePanel === 'videos' && selectedChannelId && (
+        <VideoList 
+          channelId={selectedChannelId} 
+          onVideoSelected={handleVideoSelected} 
+        />
+      )}
+      
+      {activePanel === 'content' && selectedVideoId && (
+        <VideoContent videoId={selectedVideoId} />
+      )}
+    </div>
+  );
 
   return (
-    <div className="min-h-screen">
-      <header className="bg-brand-blue text-white p-4 shadow-md">
-        <div className="container mx-auto flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold">Blog Automator Wizard</h1>
-            <p className="text-sm text-gray-200">
-              YouTube to WordPress Blog Automation
-            </p>
-          </div>
+    <div className="container mx-auto p-4">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Blog Automator Wizard</h1>
+        <div className="flex items-center gap-4">
           <Link to="/admin">
-            <Button variant="secondary" size="sm" className="flex items-center gap-1">
-              <Settings size={16} />
+            <Button variant="outline" size="sm">
+              <Settings className="h-4 w-4 mr-2" />
               Admin
             </Button>
           </Link>
         </div>
-      </header>
-
-      <main className="container mx-auto p-4 md:p-6">
-        {isMobile ? renderMobileLayout() : renderDesktopLayout()}
-      </main>
+      </div>
+      
+      {isMobile ? renderMobileLayout() : renderDesktopLayout()}
     </div>
   );
 };

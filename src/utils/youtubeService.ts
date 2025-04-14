@@ -98,8 +98,6 @@ export const fetchVideoDetails = async (videoId: string): Promise<VideoDetails> 
     } catch (error) {
       transcriptError = error;
       console.warn('❌ Could not fetch transcript:', error);
-      // Don't generate mock transcript, just set empty string
-      transcript = '';
     }
     
     // Generate summary using Google AI API (simplified)
