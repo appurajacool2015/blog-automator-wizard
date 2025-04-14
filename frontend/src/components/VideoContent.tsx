@@ -61,24 +61,39 @@ const VideoContent: React.FC<VideoContentProps> = ({ videoId }) => {
     loadDetails();
   }, [videoId, toast]);
 
-  const formatTranscript = (transcript: string) => {
-    const lines = transcript.split('\n').filter(line => line.trim() !== '');
-    
-    return lines.map((line, index) => {
-      // Match timestamp pattern [00:00:00] or [00:00]
-      const timestampMatch = line.match(/^\[([\d:]+)\]/);
-      if (timestampMatch) {
-        const timestamp = timestampMatch[0];
-        const text = line.replace(timestamp, '').trim();
-        return (
-          <p key={index} className="mb-2">
-            <span className="text-gray-500 font-mono text-xs mr-2">{timestamp}</span>
-            {text}
-          </p>
-        );
-      }
-      return <p key={index} className="mb-2">{line}</p>;
-    });
+  const formatTranscript = (transcript: string | null | undefined) => {
+    if (!transcript) {
+      return <p className="text-sm text-muted-foreground">No transcript available.</p>;
+    }
+
+    // Ensure transcript is a string
+    if (typeof transcript !== 'string') {
+      console.error('Transcript is not a string:', transcript);
+      return <p className="text-sm text-muted-foreground">Error: Invalid transcript format</p>;
+    }
+
+    try {
+      const lines = transcript.split('\n').filter(line => line.trim() !== '');
+      
+      return lines.map((line, index) => {
+        // Match timestamp pattern [00:00:00] or [00:00]
+        const timestampMatch = line.match(/^\[([\d:]+)\]/);
+        if (timestampMatch) {
+          const timestamp = timestampMatch[0];
+          const text = line.replace(timestamp, '').trim();
+          return (
+            <p key={index} className="mb-2">
+              <span className="text-gray-500 font-mono text-xs mr-2">{timestamp}</span>
+              {text}
+            </p>
+          );
+        }
+        return <p key={index} className="mb-2">{line}</p>;
+      });
+    } catch (error) {
+      console.error('Error formatting transcript:', error);
+      return <p className="text-sm text-muted-foreground">Error: Failed to format transcript</p>;
+    }
   };
 
   const formatSummary = (summary: string) => {
@@ -212,7 +227,16 @@ const VideoContent: React.FC<VideoContentProps> = ({ videoId }) => {
                     Clear Transcript Cache
                   </Button>
                 </div>
-                {details?.transcript ? (
+                {details?.error ? (
+                  <div className="text-sm text-muted-foreground">
+                    <p className="text-red-500">Error: {details.error}</p>
+                    {details.error === 'No transcript available' && (
+                      <p className="mt-2">
+                        This video might not have captions available, or the captions might be in a language we don't support.
+                      </p>
+                    )}
+                  </div>
+                ) : details?.transcript && typeof details.transcript === 'string' && details.transcript.trim() !== '' ? (
                   <div className="prose prose-sm max-w-none">
                     {formatTranscript(details.transcript)}
                   </div>

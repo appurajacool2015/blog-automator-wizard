@@ -51,72 +51,49 @@ export const fetchChannelVideos = async (channelId: string, maxResults: number =
 
 // Function to fetch video details (transcript and summary)
 export const fetchVideoDetails = async (videoId: string): Promise<VideoDetails> => {
+  const BACKEND_URL = 'http://localhost:3004';
+  
   try {
-    console.log(`\n=== Fetching details for video: ${videoId} ===`);
+    console.log('🔄 Fetching video details from backend:', `${BACKEND_URL}/api/videos/${videoId}`);
+    const response = await fetch(`${BACKEND_URL}/api/videos/${videoId}`);
     
-    // First get video info
-    const videoInfoResponse = await axios.get(
-      `https://www.googleapis.com/youtube/v3/videos?key=${API_KEY}&id=${videoId}&part=snippet`
-    );
-    
-    let title = `Video ${videoId}`;
-    let channelTitle = '';
-    
-    if (videoInfoResponse.data && videoInfoResponse.data.items && videoInfoResponse.data.items.length > 0) {
-      title = videoInfoResponse.data.items[0].snippet.title;
-      channelTitle = videoInfoResponse.data.items[0].snippet.channelTitle;
+    if (!response.ok) {
+      throw new Error(`Failed to fetch video details: ${response.statusText}`);
     }
     
-    // Fetch transcript from our cached endpoint
+    const data = await response.json();
+    console.log('✅ Successfully fetched video details:', data);
+    
+    // Fetch transcript
+    console.log('🔄 Fetching transcript from backend:', `${BACKEND_URL}/api/videos/${videoId}/transcript`);
+    const transcriptResponse = await fetch(`${BACKEND_URL}/api/videos/${videoId}/transcript`);
+    
     let transcript = '';
-    let language = 'en';
     let transcriptError = null;
     
-    try {
-      console.log(`🔄 Fetching transcript from backend: ${BACKEND_URL}/api/videos/${videoId}/transcript`);
-      const transcriptResponse = await fetch(`${BACKEND_URL}/api/videos/${videoId}/transcript`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        mode: 'cors'
-      });
-      
-      if (!transcriptResponse.ok) {
-        throw new Error(`HTTP error! status: ${transcriptResponse.status}`);
-      }
-      
+    if (transcriptResponse.ok) {
       const transcriptData = await transcriptResponse.json();
       console.log('📝 Transcript response:', transcriptData);
       
-      if (transcriptData.transcript) {
+      if (transcriptData.transcript && typeof transcriptData.transcript === 'string') {
         transcript = transcriptData.transcript;
-        console.log('✅ Successfully fetched transcript');
+      } else if (transcriptData.error) {
+        transcriptError = transcriptData.error;
       } else {
-        throw new Error('No transcript in response');
+        transcriptError = 'No transcript available';
       }
-    } catch (error) {
-      transcriptError = error;
-      console.warn('❌ Could not fetch transcript:', error);
+    } else {
+      const errorData = await transcriptResponse.json();
+      transcriptError = errorData.error || 'Failed to fetch transcript';
     }
     
-    // Generate summary using Google AI API (simplified)
-    const summary = generateSummaryFromTranscript(transcript, title);
+    console.log('✅ Successfully processed transcript response');
     
-    const details: VideoDetails = {
-      id: videoId,
-      videoId,
-      title,
-      summary,
+    return {
+      ...data,
       transcript,
-      language,
-      error: transcriptError ? transcriptError.message : null
+      error: transcriptError
     };
-    
-    // Save video details to local storage
-    saveVideoDetails(details);
-    
-    return details;
   } catch (error) {
     console.error('❌ Error fetching video details:', error);
     throw error;

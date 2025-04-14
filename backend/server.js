@@ -17,47 +17,53 @@ const port = process.env.PORT || 3004;
 // Configure middleware
 app.use(express.json());
 
-// Configure CORS to allow all origins in development
+// Set security headers
+app.use((req, res, next) => {
+  res.setHeader('Content-Security-Policy', "default-src 'self' http: https: data: blob: 'unsafe-inline' 'unsafe-eval';");
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  next();
+});
+
+// Configure CORS
 app.use(cors({
-  origin: [
-    'http://localhost:3000',  // React dev server
-    'http://127.0.0.1:3000',
-    'http://localhost:8080',   // Vite dev server
-    'http://127.0.0.1:8080',
-    'http://localhost:8081',   // Alternate Vite dev server
-    'http://127.0.0.1:8081',
-    'http://localhost:3004',   // Our server
-    'http://127.0.0.1:3004'
-  ],
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  credentials: true,
-  preflightContinue: false,
-  optionsSuccessStatus: 204
+  credentials: true
 }));
-// app.use(cors({
-//   origin: '*', // Allow all origins
-//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-//   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-// }));
 
-const channelsFilePath = path.join(__dirname, 'data', 'channels.json');
-console.log('Channels file path:', channelsFilePath);
-
-const categoriesFilePath = path.join(__dirname, 'data', 'categories.json');
+// Store data in the backend directory
+const dataDir = path.join(__dirname, 'data');
+const channelsFilePath = path.join(dataDir, 'channels.json');
+const transcriptCachePath = path.join(dataDir, 'cache', 'transcripts.json');
 
 // Ensure data directory and files exist
 const ensureDataFiles = async () => {
   try {
-    await fs.access(path.dirname(channelsFilePath));
-  } catch {
-    await fs.mkdir(path.dirname(channelsFilePath), { recursive: true });
-  }
-  
-  try {
-    await fs.access(channelsFilePath);
-  } catch {
-    await fs.writeFile(channelsFilePath, JSON.stringify({}, null, 2));
+    // Create data directory if it doesn't exist
+    await fs.mkdir(dataDir, { recursive: true });
+    
+    // Create cache directory if it doesn't exist
+    await fs.mkdir(path.join(dataDir, 'cache'), { recursive: true });
+    
+    // Create channels.json if it doesn't exist
+    try {
+      await fs.access(channelsFilePath);
+    } catch {
+      await fs.writeFile(channelsFilePath, JSON.stringify({}, null, 2));
+    }
+    
+    // Create transcripts.json if it doesn't exist
+    try {
+      await fs.access(transcriptCachePath);
+    } catch {
+      await fs.writeFile(transcriptCachePath, JSON.stringify({}, null, 2));
+    }
+  } catch (error) {
+    console.error('Error ensuring data files:', error);
   }
 };
 
@@ -310,7 +316,7 @@ app.get('/api/videos/:videoId/transcript', async (req, res) => {
     console.log(`\n=== Attempting to fetch transcript for video: ${videoId} ===`);
     
     // Check cache first
-    const cachedTranscript = transcriptCache.get(videoId);
+    const cachedTranscript = await transcriptCache.get(videoId);
     if (cachedTranscript) {
       console.log('✅ Found transcript in cache');
       return res.json({ transcript: cachedTranscript });
@@ -343,14 +349,14 @@ app.get('/api/videos/:videoId/transcript', async (req, res) => {
       }
     }
 
-    console.error(`❌ Failed to fetch subtitles in any language for video: ${videoId}`);
+    // If we get here, no transcript was found
+    console.log('❌ No transcript found for any language');
     return res.status(404).json({ 
-      error: 'No transcripts available',
-      details: `Failed to fetch transcripts in languages: ${langs.join(', ')}`,
-      errors
+      error: 'No transcript available',
+      details: errors.join(', ')
     });
   } catch (error) {
-    console.error('❌ Error in transcript endpoint:', error);
+    console.error('Error fetching transcript:', error);
     return res.status(500).json({ 
       error: 'Failed to fetch transcript',
       details: error.message

@@ -1,4 +1,3 @@
-
 #!/usr/bin/env node
 /**
  * Cron job to fetch new videos and generate blog posts automatically
@@ -13,11 +12,7 @@ const https = require('https');
 // Configuration
 const CONFIG = {
   dataDir: path.join(__dirname, '../../data'),
-  categories: 'categories.json',
   channels: 'channels.json',
-  videos: 'videos.json',
-  videoDetails: 'video-details.json',
-  blogPosts: 'blog-posts.json',
   wordpressConfig: {
     site: 'coolestmags.xyz',
     username: 'YOUR_WORDPRESS_USERNAME',
@@ -128,24 +123,15 @@ async function main() {
   try {
     console.log('Starting blog automation cron job...');
     
-    // Load data
-    const categories = readJsonFile(CONFIG.categories) || [];
+    // Load channels data
     const channels = readJsonFile(CONFIG.channels) || [];
-    const videos = readJsonFile(CONFIG.videos) || [];
-    const videoDetails = readJsonFile(CONFIG.videoDetails) || {};
-    const blogPosts = readJsonFile(CONFIG.blogPosts) || [];
-    
-    if (categories.length === 0) {
-      console.log('No categories found. Please add categories first.');
-      return;
-    }
     
     if (channels.length === 0) {
       console.log('No channels found. Please add channels first.');
       return;
     }
     
-    console.log(`Found ${categories.length} categories and ${channels.length} channels.`);
+    console.log(`Found ${channels.length} channels.`);
     
     // Process each channel
     for (const channel of channels) {
@@ -170,30 +156,6 @@ async function main() {
           const publishedAt = item.snippet.publishedAt;
           const thumbnail = item.snippet.thumbnails.medium.url;
           
-          // Check if we've already processed this video
-          const existingVideo = videos.find(v => v.videoId === videoId);
-          const existingBlogPost = blogPosts.find(bp => bp.videoId === videoId);
-          
-          if (existingBlogPost) {
-            console.log(`Blog post already exists for video ${videoId}.`);
-            continue;
-          }
-          
-          // Add video to our database if it's new
-          if (!existingVideo) {
-            const newVideo = {
-              id: videoId,
-              title,
-              videoId,
-              channelId: channel.id,
-              thumbnail,
-              publishedAt
-            };
-            
-            videos.push(newVideo);
-            console.log(`Added new video: ${title}`);
-          }
-          
           // Get video transcript and generate blog post
           try {
             console.log(`Processing video: ${title} (${videoId})`);
@@ -215,18 +177,6 @@ ${transcript.substring(0, 200)}...
 *This post was automatically generated from YouTube content.*
             `;
             
-            // Store the blog post
-            const blogPost = {
-              id: `blog-${Date.now()}`,
-              videoId,
-              channelId: channel.id,
-              categoryId: channel.categoryId,
-              title,
-              content: blogContent,
-              publishedAt: new Date().toISOString(),
-              wordpressPostId: null
-            };
-            
             // Post to WordPress
             try {
               console.log(`Posting to WordPress: ${title}`);
@@ -239,43 +189,29 @@ ${transcript.substring(0, 200)}...
                 [channel.categoryId] // WordPress category IDs
               );
               
-              blogPost.wordpressPostId = wpResponse.id;
               console.log(`Successfully posted to WordPress: Post ID ${wpResponse.id}`);
               */
               
               // For demo purposes, we'll just simulate success
-              blogPost.wordpressPostId = `wp-${Date.now()}`;
-              console.log(`Simulated WordPress post: ID ${blogPost.wordpressPostId}`);
+              console.log(`Simulated WordPress post for video ${videoId}`);
               
-              blogPosts.push(blogPost);
-              
-            } catch (wpError) {
-              console.error(`Error posting to WordPress: ${wpError.message}`);
+            } catch (error) {
+              console.error(`Error posting to WordPress: ${error.message}`);
             }
-            
-          } catch (videoError) {
-            console.error(`Error processing video ${videoId}: ${videoError.message}`);
+          } catch (error) {
+            console.error(`Error processing video ${videoId}: ${error.message}`);
           }
         }
-        
-      } catch (channelError) {
-        console.error(`Error processing channel ${channel.name}: ${channelError.message}`);
+      } catch (error) {
+        console.error(`Error processing channel ${channel.name}: ${error.message}`);
       }
     }
     
-    // Save updated data
-    writeJsonFile(CONFIG.videos, videos);
-    writeJsonFile(CONFIG.blogPosts, blogPosts);
-    
     console.log('Blog automation cron job completed successfully.');
-    
   } catch (error) {
-    console.error('Error in blog automation cron job:', error);
+    console.error('Error in main function:', error);
   }
 }
 
 // Run the main function
-main().catch(error => {
-  console.error('Fatal error in cron job:', error);
-  process.exit(1);
-});
+main();
