@@ -19,13 +19,27 @@ app.use(express.json());
 
 // Configure CORS to allow all origins in development
 app.use(cors({
-  origin: true,  // Allow all origins
+  origin: [
+    'http://localhost:3000',  // React dev server
+    'http://127.0.0.1:3000',
+    'http://localhost:8080',   // Vite dev server
+    'http://127.0.0.1:8080',
+    'http://localhost:8081',   // Alternate Vite dev server
+    'http://127.0.0.1:8081',
+    'http://localhost:3004',   // Our server
+    'http://127.0.0.1:3004'
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  credentials: false,
+  credentials: true,
   preflightContinue: false,
   optionsSuccessStatus: 204
 }));
+// app.use(cors({
+//   origin: '*', // Allow all origins
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+// }));
 
 const channelsFilePath = path.join(process.cwd(), 'data', 'channels.json');
 console.log('Channels file path:', channelsFilePath);

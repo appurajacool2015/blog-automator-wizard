@@ -79,7 +79,7 @@ export const fetchVideoDetails = async (videoId: string): Promise<VideoDetails> 
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include'
+        mode: 'cors'
       });
       
       if (!transcriptResponse.ok) {
@@ -98,7 +98,8 @@ export const fetchVideoDetails = async (videoId: string): Promise<VideoDetails> 
     } catch (error) {
       transcriptError = error;
       console.warn('❌ Could not fetch transcript:', error);
-      transcript = generateMockTranscript(title);
+      // Don't generate mock transcript, just set empty string
+      transcript = '';
     }
     
     // Generate summary using Google AI API (simplified)
@@ -158,27 +159,6 @@ function generateMockVideos(channelId: string, count: number): Video[] {
   }
   
   return videos;
-}
-
-// Helper function to generate mock transcript
-function generateMockTranscript(title: string = ''): string {
-  return `[00:00:00] Hello everyone and welcome to our channel.
-  [00:00:05] Today we're going to be talking about ${title || 'the latest market trends'}.
-  [00:00:12] As you know, there's been quite a bit of volatility in recent weeks.
-  [00:00:18] Let's dive into what this means for your investments.
-  [00:00:25] First, let's look at the technology sector.
-  [00:00:30] Tech stocks have been outperforming other sectors consistently.
-  [00:00:37] Companies like Apple, Microsoft, and Google continue to show strong growth.
-  [00:00:45] This is despite the overall market uncertainty we've been experiencing.
-  [00:00:52] Moving on to financial stocks...
-  [00:00:58] Banks have been struggling due to interest rate concerns.
-  [00:01:05] However, there are some bright spots in specialized financial services.
-  [00:01:12] Let's now talk about diversification strategies that could help protect your portfolio.
-  [00:01:20] Spreading investments across different asset classes remains a solid approach.
-  [00:01:28] And don't forget about international exposure, particularly in emerging markets.
-  [00:01:35] Some of these economies are growing at impressive rates despite global challenges.
-  [00:01:43] To conclude, maintain a balanced perspective on risk and return.
-  [00:01:50] Thanks for watching, and we'll see you in the next video!`;
 }
 
 // Helper function to generate mock summary

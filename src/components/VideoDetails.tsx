@@ -76,35 +76,25 @@ const VideoDetails: React.FC<VideoDetailsProps> = ({ videoId }) => {
 
   return (
     <div className="space-y-4">
-      {videoDetails?.transcript ? (
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Transcript</h3>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={clearTranscriptCache}
-            >
-              Clear Cache
-            </Button>
-          </div>
+      <div className="space-y-2">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Transcript</h3>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={clearTranscriptCache}
+          >
+            Clear Cache
+          </Button>
+        </div>
+        {videoDetails?.transcript ? (
           <p className="text-sm text-muted-foreground">{videoDetails.transcript}</p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold text-muted-foreground">No Transcript Available</h3>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={clearTranscriptCache}
-            >
-              Clear Cache & Retry
-            </Button>
-          </div>
-          <p className="text-sm text-muted-foreground">No transcript is available for this video.</p>
-        </div>
-      )}
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            No transcript available in English or Hindi for this video.
+          </p>
+        )}
+      </div>
     </div>
   );
 };
