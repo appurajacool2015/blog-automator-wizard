@@ -3,10 +3,12 @@ import cors from 'cors';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import pkg from 'youtube-transcript';
-const { getSubtitles } = pkg;
+import { createRequire } from 'module';
 import { getCachedVideos, updateCache } from './server/cache.js';
 import transcriptCache from './server/transcriptCache.js';
+
+const require = createRequire(import.meta.url);
+const { getSubtitles } = require('youtube-captions-scraper');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -15,19 +17,14 @@ const port = process.env.PORT || 3004;
 // Configure middleware
 app.use(express.json());
 
-// Configure CORS to allow requests from development servers
+// Configure CORS to allow all origins in development
 app.use(cors({
-  origin: [
-    'http://localhost:3000',  // React dev server
-    'http://127.0.0.1:3000',
-    'http://localhost:8080',   // Vite dev server
-    'http://127.0.0.1:8080',
-    'http://localhost:8081',   // Alternate Vite dev server
-    'http://127.0.0.1:8081'
-  ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type'],
-  credentials: true
+  origin: true,  // Allow all origins
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: false,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 
 const channelsFilePath = path.join(process.cwd(), 'data', 'channels.json');
@@ -296,24 +293,54 @@ app.get('/api/video/:videoId', async (req, res) => {
 app.get('/api/videos/:videoId/transcript', async (req, res) => {
   try {
     const { videoId } = req.params;
+    console.log(`\n=== Attempting to fetch transcript for video: ${videoId} ===`);
     
     // Check cache first
     const cachedTranscript = transcriptCache.get(videoId);
     if (cachedTranscript) {
+      console.log('✅ Found transcript in cache');
       return res.json({ transcript: cachedTranscript });
     }
     
     // If not in cache, fetch from YouTube
-    const subtitles = await getSubtitles({ videoId });
-    const transcript = subtitles.map(sub => sub.text).join(' ');
-    
-    // Cache the transcript
-    await transcriptCache.set(videoId, transcript);
-    
-    res.json({ transcript });
+    const langs = ['en', 'hi']; // Priority order
+    let transcript = '';
+    let errors = [];
+
+    for (const lang of langs) {
+      try {
+        console.log(`\n🔄 Attempting to fetch ${lang} subtitles for video ${videoId}`);
+        const captions = await getSubtitles({ videoID: videoId, lang });
+        
+        if (captions && captions.length > 0) {
+          console.log(`✅ Successfully fetched ${captions.length} captions in ${lang}`);
+          transcript = captions.map(caption => caption.text).join(' ');
+          console.log(`📄 First few words of transcript: ${transcript.substring(0, 100)}...`);
+          
+          // Cache the transcript
+          await transcriptCache.set(videoId, transcript);
+          console.log('✅ Successfully cached the transcript');
+          
+          return res.json({ transcript });
+        }
+      } catch (error) {
+        console.warn(`⚠️  Subtitles not found for language: ${lang}`);
+        errors.push(`${lang}: ${error.message}`);
+      }
+    }
+
+    console.error(`❌ Failed to fetch subtitles in any language for video: ${videoId}`);
+    return res.status(404).json({ 
+      error: 'No transcripts available',
+      details: `Failed to fetch transcripts in languages: ${langs.join(', ')}`,
+      errors
+    });
   } catch (error) {
-    console.error('Error fetching transcript:', error);
-    res.status(500).json({ error: 'Failed to fetch transcript' });
+    console.error('❌ Error in transcript endpoint:', error);
+    return res.status(500).json({ 
+      error: 'Failed to fetch transcript',
+      details: error.message
+    });
   }
 });
 
@@ -325,6 +352,18 @@ app.post('/api/generate-blog/:videoId', async (req, res) => {
   } catch (error) {
     console.error('Error generating blog post:', error);
     res.status(500).json({ error: 'Failed to generate blog post' });
+  }
+});
+
+// Clear transcript cache
+app.delete('/api/transcript-cache', async (req, res) => {
+  try {
+    await transcriptCache.clear();
+    console.log('✅ Transcript cache cleared');
+    res.json({ success: true, message: 'Transcript cache cleared successfully' });
+  } catch (error) {
+    console.error('❌ Error clearing transcript cache:', error);
+    res.status(500).json({ error: 'Failed to clear transcript cache' });
   }
 });
 

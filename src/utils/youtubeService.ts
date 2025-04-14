@@ -1,4 +1,3 @@
-
 import { Video, VideoDetails } from '../types';
 import { saveVideos, saveVideoDetails } from './dataService';
 import axios from 'axios';
@@ -6,6 +5,9 @@ import axios from 'axios';
 // Using the provided API key for YouTube Data API
 const API_KEY = 'AIzaSyB5JTPQKWa6Nm3gPHQlrI3ipxAdjVQTWrQ';
 const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search';
+
+// Add backend URL constant
+const BACKEND_URL = 'http://localhost:3004';
 
 // Function to fetch videos from a channel
 export const fetchChannelVideos = async (channelId: string, maxResults: number = 50): Promise<Video[]> => {
@@ -50,7 +52,7 @@ export const fetchChannelVideos = async (channelId: string, maxResults: number =
 // Function to fetch video details (transcript and summary)
 export const fetchVideoDetails = async (videoId: string): Promise<VideoDetails> => {
   try {
-    console.log(`Fetching details for video: ${videoId}`);
+    console.log(`\n=== Fetching details for video: ${videoId} ===`);
     
     // First get video info
     const videoInfoResponse = await axios.get(
@@ -68,16 +70,34 @@ export const fetchVideoDetails = async (videoId: string): Promise<VideoDetails> 
     // Fetch transcript from our cached endpoint
     let transcript = '';
     let language = 'en';
+    let transcriptError = null;
     
     try {
-      const transcriptResponse = await fetch(`/api/videos/${videoId}/transcript`);
+      console.log(`🔄 Fetching transcript from backend: ${BACKEND_URL}/api/videos/${videoId}/transcript`);
+      const transcriptResponse = await fetch(`${BACKEND_URL}/api/videos/${videoId}/transcript`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
+      
       if (!transcriptResponse.ok) {
-        throw new Error('Failed to fetch transcript');
+        throw new Error(`HTTP error! status: ${transcriptResponse.status}`);
       }
+      
       const transcriptData = await transcriptResponse.json();
-      transcript = transcriptData.transcript;
-    } catch (transcriptError) {
-      console.warn('Could not fetch transcript, using mock data:', transcriptError);
+      console.log('📝 Transcript response:', transcriptData);
+      
+      if (transcriptData.transcript) {
+        transcript = transcriptData.transcript;
+        console.log('✅ Successfully fetched transcript');
+      } else {
+        throw new Error('No transcript in response');
+      }
+    } catch (error) {
+      transcriptError = error;
+      console.warn('❌ Could not fetch transcript:', error);
       transcript = generateMockTranscript(title);
     }
     
@@ -91,6 +111,7 @@ export const fetchVideoDetails = async (videoId: string): Promise<VideoDetails> 
       summary,
       transcript,
       language,
+      error: transcriptError ? transcriptError.message : null
     };
     
     // Save video details to local storage
@@ -98,17 +119,8 @@ export const fetchVideoDetails = async (videoId: string): Promise<VideoDetails> 
     
     return details;
   } catch (error) {
-    console.error('Error fetching video details:', error);
-    
-    // Return mock data as fallback
-    return {
-      id: videoId,
-      videoId,
-      title: `Video ${videoId}`,
-      summary: generateMockSummary(),
-      transcript: generateMockTranscript(`Video ${videoId}`),
-      language: 'en',
-    };
+    console.error('❌ Error fetching video details:', error);
+    throw error;
   }
 };
 

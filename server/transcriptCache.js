@@ -62,6 +62,11 @@ class TranscriptCache {
     };
     await this.saveCache();
   }
+
+  async clear() {
+    this.cache = {};
+    await this.saveCache();
+  }
 }
 
 const transcriptCache = new TranscriptCache();

@@ -11,8 +11,7 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview"
-  
-},
+  },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "^1.2.0",
@@ -67,7 +66,7 @@
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.1.0",
     "vaul": "^0.9.3",
-    "youtube-transcript": "^1.0.6",
+    "youtube-captions-scraper": "^2.0.3",
     "zod": "^3.23.8"
   },
   "devDependencies": {

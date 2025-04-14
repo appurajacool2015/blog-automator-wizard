@@ -1,4 +1,3 @@
-
 export interface Category {
   id: string;
   name: string;
@@ -27,4 +26,5 @@ export interface VideoDetails {
   summary: string;
   transcript: string;
   language: string;
+  error?: string | null;
 }
