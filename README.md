@@ -1,152 +1,117 @@
 # Blog Automator Wizard
 
-A powerful tool that helps you convert YouTube videos into blog posts automatically. The application fetches video transcripts, generates summaries, and creates blog-ready content.
+A tool to automatically generate blog posts from YouTube videos.
 
 ## Features
 
-- **Video Content Management**
-  - Fetch and display YouTube video details
-  - View video transcripts with timestamp formatting
-  - Generate AI-powered summaries of video content
-  - Clear transcript cache for fresh content
+- Fetch videos from YouTube channels
+- Generate transcripts using AI
+- Create blog posts automatically
+- WordPress integration
+- Scheduled updates
 
-- **Channel Management**
-  - Add and manage YouTube channels
-  - Organize channels by categories
-  - Update channel names and categories
-  - Delete channels
-
-- **Blog Generation**
-  - Convert video content into blog posts
-  - AI-powered content transformation
-  - Customizable blog post structure
-
-## Tech Stack
-
-- **Frontend**
-  - React with TypeScript
-  - Vite for build tooling
-  - Tailwind CSS for styling
-  - Shadcn UI components
-  - React Query for data fetching
-  - React Router for navigation
-
-- **Backend**
-  - Node.js with Express
-  - TypeScript
-  - File-based data storage
-  - CORS enabled for frontend communication
-
-## Getting Started
-
-### Prerequisites
+## Prerequisites
 
 - Node.js (v18 or higher)
-- npm or yarn
-- YouTube API key (for video fetching)
-
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone [repository-url]
-   cd blog-automator-wizard
-   ```
-
-2. Install frontend dependencies:
-   ```bash
-   cd frontend
-   npm install
-   ```
-
-3. Install backend dependencies:
-   ```bash
-   cd ../backend
-   npm install
-   ```
-
-4. Create environment files:
-   - Frontend: Create `.env` in the frontend directory
-   - Backend: Create `.env` in the backend directory
-
-5. Start the development servers:
-   - Frontend: `npm run dev` (runs on port 5173)
-   - Backend: `npm run dev` (runs on port 3004)
+- npm (v9 or higher)
+- YouTube API key
+- WordPress API credentials
 
 ## Project Structure
 
 ```
 blog-automator-wizard/
-├── frontend/
-│   ├── src/
-│   │   ├── components/     # React components
-│   │   ├── utils/         # Utility functions
-│   │   ├── types/         # TypeScript type definitions
-│   │   └── App.tsx        # Main application component
-│   ├── public/            # Static assets
-│   └── package.json       # Frontend dependencies
+├── frontend/              # React frontend application
+│   ├── src/              # Source code
+│   ├── public/           # Static assets
+│   └── package.json      # Frontend dependencies
 │
-├── backend/
-│   ├── src/
-│   │   ├── data/          # Data storage
-│   │   ├── routes/        # API routes
-│   │   └── server.ts      # Express server
-│   └── package.json       # Backend dependencies
+├── backend/              # Node.js backend server
+│   ├── src/              # Source code
+│   ├── data/             # Data storage
+│   │   ├── channels.json # Channel configurations
+│   │   └── cache/        # Cache directory
+│   │       └── transcripts.json # Cached transcripts
+│   └── package.json      # Backend dependencies
 │
-└── README.md
+└── README.md            # Project documentation
 ```
 
-## API Endpoints
+## Installation
 
-### Backend API (Port 3004)
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/blog-automator-wizard.git
+cd blog-automator-wizard
+```
 
-- `GET /api/videos/:videoId` - Fetch video details
-- `GET /api/transcript/:videoId` - Get video transcript
-- `DELETE /api/transcript-cache` - Clear transcript cache
-- `GET /api/channels` - Get all channels
-- `POST /api/channels` - Add a new channel
-- `PUT /api/channels/:channelId` - Update a channel
-- `DELETE /api/channels/:channelId` - Delete a channel
-- `GET /api/categories` - Get all categories
-- `POST /api/categories` - Add a new category
-- `DELETE /api/categories/:categoryId` - Delete a category
+2. Install dependencies for both frontend and backend:
+```bash
+# Install frontend dependencies
+cd frontend
+npm install
+npm install -D @vitejs/plugin-react-swc  # Required for Vite React development
+
+# Install backend dependencies
+cd ../backend
+npm install
+```
+
+3. Create a `.env` file in the backend directory with your API keys:
+```bash
+cd backend
+cp .env.example .env
+# Edit .env with your API keys
+```
 
 ## Development
 
-### Frontend Development
+1. Start the backend server:
+```bash
+cd backend
+npm run dev
+```
 
-The frontend is built with React and TypeScript, using Vite as the build tool. Key features include:
+2. Start the frontend development server:
+```bash
+cd frontend
+npm run dev
+```
 
-- Component-based architecture
-- Type-safe development with TypeScript
-- Responsive design with Tailwind CSS
-- Modern UI components from Shadcn
-- Efficient state management with React Query
+3. Access the application at `http://localhost:5173`
 
-### Backend Development
+## Cleaning Up and Reinstalling Dependencies
 
-The backend is a Node.js Express server with TypeScript support. Features include:
+If you need to clean up and reinstall all dependencies:
 
-- RESTful API endpoints
-- File-based data storage
-- CORS configuration for frontend access
-- Error handling and logging
-- Type-safe development
+```bash
+# Remove all node_modules directories
+rm -rf node_modules frontend/node_modules backend/node_modules
 
-## Contributing
+# Reinstall all dependencies
+cd frontend && npm install && npm install -D @vitejs/plugin-react-swc && cd ../backend && npm install
+```
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+## Production Build
+
+1. Build the frontend:
+```bash
+cd frontend
+npm run build
+```
+
+2. Start the production server:
+```bash
+cd backend
+npm start
+```
+
+## Configuration
+
+- Edit `backend/data/channels.json` to add your YouTube channels
+- Configure WordPress settings in the frontend
+- Set up cron jobs for automatic updates
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- YouTube API for video content access
-- OpenAI for AI-powered content generation
-- The open-source community for various tools and libraries
+MIT
