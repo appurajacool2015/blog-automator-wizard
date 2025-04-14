@@ -89,6 +89,48 @@ Think of the project like a house with different rooms:
 └── package.json         # List of tools we need
 ```
 
+## 🛠️ Project Architecture and Technologies
+
+### Frontend Stack
+- **Framework**: React with TypeScript
+- **Build Tool**: Vite
+- **UI Components**: shadcn-ui
+- **Styling**: Tailwind CSS
+- **Location**: `/src` directory
+- **Entry Point**: `src/main.tsx`
+- **Key Features**:
+  - TypeScript for type safety
+  - Component-based architecture
+  - Responsive design with Tailwind
+  - Modern UI with shadcn components
+
+### Backend Stack
+- **Framework**: Express.js
+- **Runtime**: Node.js
+- **Module System**: ES Modules (ESM)
+- **Location**: 
+  - Main server: `server.js` (root directory)
+  - Supporting modules: `/server` directory
+- **Key Features**:
+  - RESTful API architecture
+  - CORS-enabled for frontend communication
+  - File-based caching system
+  - YouTube API integration
+
+### Data Storage
+- **Location**: `/data` directory
+- **Storage Types**:
+  - JSON files for configuration
+  - File-based cache system
+  - Temporary storage for transcripts
+
+### Development Tools
+- **Package Manager**: npm
+- **TypeScript Configuration**: Multiple config files for different environments
+- **Linting**: ESLint
+- **Styling**: PostCSS with Tailwind
+- **Environment**: `.env` for configuration
+
 ## 🛠️ What Makes It Work?
 
 1. **Frontend (The Pretty Part)**
