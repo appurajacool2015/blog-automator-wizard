@@ -21,6 +21,36 @@ This will start:
 
 💡 **Tip**: If port 8080 is busy, the app will automatically try port 8081. Just check your terminal to see which port it's using!
 
+### 🔄 CORS Configuration and Port Management
+
+The application uses CORS (Cross-Origin Resource Sharing) to allow communication between the frontend and backend. By default, the backend server (running on port 3004) is configured to accept requests from:
+- http://localhost:8080
+- http://localhost:8081
+- http://localhost:3000
+- http://127.0.0.1:8080
+- http://127.0.0.1:8081
+- http://127.0.0.1:3000
+
+If you're running the frontend on a different port, you'll need to update the CORS configuration in `server.js`. Look for the `cors` middleware configuration and add your frontend's URL to the `origin` array.
+
+Example:
+```javascript
+app.use(cors({
+  origin: [
+    'http://localhost:8080',
+    'http://localhost:8081',
+    'http://localhost:3000',
+    // Add your custom port here if needed
+  ],
+  // ... other CORS options
+}));
+```
+
+💡 **Troubleshooting Tip**: If you see CORS errors in your browser's console, check:
+1. The port your frontend is running on
+2. The port your backend is running on
+3. Make sure both are included in the CORS configuration
+
 ### 🖥️ Running Just the Frontend
 
 If you only want to see the website, type:
