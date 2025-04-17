@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: blog-automator-wizard
+    env: node
+    buildCommand: cd backend && npm install && npm run build
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: YOUTUBE_API_KEY
+        value: AIzaSyB5JTPQKWa6Nm3gPHQlrI3ipxAdjVQTWrQ
+      - key: CORS_ORIGIN
+        value: https://sage-baklava-75f4bf.netlify.app
+      - key: PORT
+        value: 3004
