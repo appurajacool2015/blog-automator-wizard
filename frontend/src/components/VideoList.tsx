@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   Card, 
@@ -7,9 +6,11 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Video } from '@/types';
-import { getVideosByChannel } from '@/utils/dataService';
+import { getVideosByChannel, saveVideos } from '@/utils/dataService';
 import { fetchChannelVideos } from '@/utils/youtubeService';
-import { Loader2 } from 'lucide-react';
+import { Loader2, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import axios from 'axios';
 
 interface VideoListProps {
   channelId?: string;
@@ -20,25 +21,51 @@ const VideoList: React.FC<VideoListProps> = ({ channelId, onVideoSelected }) => 
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
+  const loadVideos = async (forceRefresh = false) => {
     if (!channelId) {
       setVideos([]);
       setSelectedVideoId(null);
       return;
     }
+
+    setLoading(true);
     
-    const loadVideos = async () => {
-      setLoading(true);
-      
-      try {
-        // First check if we have videos in local storage
+    try {
+      // If force refresh is true, clear both backend and local storage cache
+      if (forceRefresh) {
+        setRefreshing(true);
+        try {
+          // Clear backend cache
+          await axios.delete(`http://localhost:3004/api/videos/${channelId}/cache`);
+          
+          // Clear local storage for this channel's videos
+          const allVideos = getVideosByChannel(''); // Get all videos
+          const filteredVideos = allVideos.filter(v => v.channelId !== channelId);
+          localStorage.setItem('blog-automator-videos', JSON.stringify(filteredVideos));
+        } catch (error) {
+          console.error('Error clearing cache:', error);
+        }
+      }
+
+      // Always fetch fresh videos from API when refreshing
+      if (forceRefresh) {
+        const fetchedVideos = await fetchChannelVideos(channelId);
+        setVideos(fetchedVideos);
+        
+        // Select the first video if available
+        if (fetchedVideos.length > 0 && !selectedVideoId) {
+          setSelectedVideoId(fetchedVideos[0].videoId);
+          onVideoSelected?.(fetchedVideos[0].videoId);
+        }
+      } else {
+        // For initial load, check local storage first
         let videosList = getVideosByChannel(channelId);
         
-        // If we have no videos or fewer than 50, fetch from API
+        // If no videos in local storage, fetch from API
         if (videosList.length === 0) {
-          const fetchedVideos = await fetchChannelVideos(channelId);
-          videosList = fetchedVideos;
+          videosList = await fetchChannelVideos(channelId);
         }
         
         setVideos(videosList);
@@ -48,15 +75,22 @@ const VideoList: React.FC<VideoListProps> = ({ channelId, onVideoSelected }) => 
           setSelectedVideoId(videosList[0].videoId);
           onVideoSelected?.(videosList[0].videoId);
         }
-      } catch (error) {
-        console.error('Error loading videos:', error);
-      } finally {
-        setLoading(false);
       }
-    };
-    
+    } catch (error) {
+      console.error('Error loading videos:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
     loadVideos();
   }, [channelId, onVideoSelected, selectedVideoId]);
+
+  const handleRefresh = () => {
+    loadVideos(true);
+  };
 
   const handleVideoClick = (videoId: string) => {
     setSelectedVideoId(videoId);
@@ -66,7 +100,28 @@ const VideoList: React.FC<VideoListProps> = ({ channelId, onVideoSelected }) => 
   return (
     <Card className="h-full">
       <CardHeader className="pb-2">
-        <CardTitle className="text-xl">Videos</CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-xl">Videos</CardTitle>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={handleRefresh}
+            disabled={loading || refreshing}
+            className="flex items-center gap-2"
+          >
+            {refreshing ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Refreshing...</span>
+              </>
+            ) : (
+              <>
+                <RefreshCw className="h-4 w-4" />
+                <span>Refresh Videos</span>
+              </>
+            )}
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         {loading ? (

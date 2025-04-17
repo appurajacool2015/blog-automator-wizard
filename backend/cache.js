@@ -47,6 +47,10 @@ export const getCachedVideos = (channelId) => {
   return item.value;
 };
 
+export const clearChannelCache = (channelId) => {
+  videoCache.delete(channelId);
+};
+
 export const updateCache = (channelId, videos) => {
   const item = {
     value: videos,

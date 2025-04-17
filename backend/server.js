@@ -299,6 +299,17 @@ app.get('/api/videos/:channelId', async (req, res) => {
   }
 });
 
+app.delete('/api/videos/:channelId/cache', async (req, res) => {
+  try {
+    const { channelId } = req.params;
+    clearChannelCache(channelId);
+    res.json({ message: 'Cache cleared successfully' });
+  } catch (error) {
+    console.error('Error clearing cache:', error);
+    res.status(500).json({ error: 'Failed to clear cache' });
+  }
+});
+
 app.get('/api/video/:videoId', async (req, res) => {
   try {
     const { videoId } = req.params;
