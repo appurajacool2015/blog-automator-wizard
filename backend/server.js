@@ -4,36 +4,77 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
-import { getCachedVideos, updateCache } from './cache.js';
+import { getCachedVideos, updateCache, clearChannelCache } from './cache.js';
 import transcriptCache from './transcriptCache.js';
+import dotenv from 'dotenv';
+
+// Load environment variables based on NODE_ENV
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
+dotenv.config({ path: path.resolve(process.cwd(), envFile) });
 
 const require = createRequire(import.meta.url);
 const { getSubtitles } = require('youtube-captions-scraper');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
-const port = process.env.PORT || 3004;
+const port = process.env.PORT || 3005;
 
-// Configure middleware
+// Configure CORS
+const isDevelopment = process.env.NODE_ENV !== 'production';
+console.log('Current environment:', process.env.NODE_ENV);
+console.log('Is development:', isDevelopment);
+console.log('CORS Origin:', process.env.CORS_ORIGIN);
+
+const allowedOrigins = isDevelopment
+  ? [
+      'http://localhost:8080',
+      'http://localhost:5173',
+      'http://127.0.0.1:8080',
+      'http://127.0.0.1:5173',
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+      'http://localhost:3005',
+      'http://127.0.0.1:3005',
+    ]
+  : [
+      'https://sage-baklava-75f4bf.netlify.app',
+      process.env.CORS_ORIGIN || 'https://sage-baklava-75f4bf.netlify.app'
+    ];
+
+// Apply CORS middleware before other middleware
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.error('CORS Error: Origin not allowed:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
-// Set security headers
+// Add CORS headers to all responses
 app.use((req, res, next) => {
-  res.setHeader('Content-Security-Policy', "default-src 'self' http: https: data: blob: 'unsafe-inline' 'unsafe-eval';");
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  const origin = req.headers.origin;
+  if (isDevelopment || allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+  }
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   next();
 });
 
-// Configure CORS
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  credentials: true
-}));
+// Handle OPTIONS requests
+app.options('*', cors());
 
 // Store data in the backend directory
 const dataDir = path.join(__dirname, 'data');
@@ -310,11 +351,33 @@ app.delete('/api/videos/:channelId/cache', async (req, res) => {
   }
 });
 
-app.get('/api/video/:videoId', async (req, res) => {
+app.get('/api/videos/:videoId', async (req, res) => {
   try {
     const { videoId } = req.params;
-    const transcript = await getSubtitles({ videoID: videoId });
-    res.json({ transcript });
+    console.log(`Fetching video details for: ${videoId}`);
+    
+    // Fetch video details from YouTube API
+    const response = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${process.env.YOUTUBE_API_KEY}`);
+    
+    if (!response.ok) {
+      throw new Error(`YouTube API error: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    if (!data.items || data.items.length === 0) {
+      return res.status(404).json({ error: 'Video not found' });
+    }
+    
+    const videoDetails = {
+      id: videoId,
+      title: data.items[0].snippet.title,
+      description: data.items[0].snippet.description,
+      thumbnail: data.items[0].snippet.thumbnails.medium?.url || data.items[0].snippet.thumbnails.default?.url,
+      publishedAt: data.items[0].snippet.publishedAt,
+    };
+    
+    res.json(videoDetails);
   } catch (error) {
     console.error('Error fetching video details:', error);
     res.status(500).json({ error: 'Failed to fetch video details' });
@@ -396,13 +459,6 @@ app.delete('/api/transcript-cache', async (req, res) => {
     console.error('❌ Error clearing transcript cache:', error);
     res.status(500).json({ error: 'Failed to clear transcript cache' });
   }
-});
-
-app.use(express.static('dist'));
-
-// Handle SPA routing
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 app.listen(port, () => {

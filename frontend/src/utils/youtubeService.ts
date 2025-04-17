@@ -2,12 +2,10 @@ import { Video, VideoDetails } from '../types';
 import { saveVideos, saveVideoDetails } from './dataService';
 import axios from 'axios';
 
-// Using the provided API key for YouTube Data API
-const API_KEY = 'AIzaSyB5JTPQKWa6Nm3gPHQlrI3ipxAdjVQTWrQ';
+// Using environment variables
+const API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3005';
 const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search';
-
-// Add backend URL constant
-const BACKEND_URL = 'http://localhost:3004';
 
 // Function to fetch videos from a channel
 export const fetchChannelVideos = async (channelId: string, maxResults: number = 50): Promise<Video[]> => {
@@ -51,13 +49,22 @@ export const fetchChannelVideos = async (channelId: string, maxResults: number =
 
 // Function to fetch video details (transcript and summary)
 export const fetchVideoDetails = async (videoId: string): Promise<VideoDetails> => {
-  const BACKEND_URL = 'http://localhost:3004';
-  
   try {
     console.log('🔄 Fetching video details from backend:', `${BACKEND_URL}/api/videos/${videoId}`);
-    const response = await fetch(`${BACKEND_URL}/api/videos/${videoId}`);
+    const response = await fetch(`${BACKEND_URL}/api/videos/${videoId}`, {
+      method: 'GET',
+      mode: 'cors',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    });
     
     if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('Video not found');
+      }
       throw new Error(`Failed to fetch video details: ${response.statusText}`);
     }
     
@@ -66,7 +73,15 @@ export const fetchVideoDetails = async (videoId: string): Promise<VideoDetails> 
     
     // Fetch transcript
     console.log('🔄 Fetching transcript from backend:', `${BACKEND_URL}/api/videos/${videoId}/transcript`);
-    const transcriptResponse = await fetch(`${BACKEND_URL}/api/videos/${videoId}/transcript`);
+    const transcriptResponse = await fetch(`${BACKEND_URL}/api/videos/${videoId}/transcript`, {
+      method: 'GET',
+      mode: 'cors',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    });
     
     let transcript = '';
     let transcriptError = null;
@@ -96,6 +111,9 @@ export const fetchVideoDetails = async (videoId: string): Promise<VideoDetails> 
     };
   } catch (error) {
     console.error('❌ Error fetching video details:', error);
+    if (error instanceof TypeError && error.message.includes('NetworkError')) {
+      throw new Error('Network error: Please check your internet connection and try again');
+    }
     throw error;
   }
 };

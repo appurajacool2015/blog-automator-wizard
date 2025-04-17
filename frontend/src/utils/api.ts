@@ -1,20 +1,47 @@
-const isDevelopment = import.meta.env.DEV;
-const API_URL = isDevelopment
-  ? 'http://localhost:3004'
-  : import.meta.env.VITE_API_URL || 'https://blog-automator-wizard.onrender.com';
+import axios from 'axios';
 
-export const getApiUrl = (endpoint: string) => {
-  return `${API_URL}${endpoint}`;
-};
+// Get environment variables
+const isDevelopment = import.meta.env.VITE_NODE_ENV === 'development';
+const apiUrl = import.meta.env.VITE_API_URL;
 
-export const fetchWithCors = async (endpoint: string, options: RequestInit = {}) => {
-  const url = getApiUrl(endpoint);
-  const response = await fetch(url, {
+console.log('Frontend environment:', import.meta.env.VITE_NODE_ENV);
+console.log('API URL:', apiUrl);
+
+// Create axios instance with default config
+const api = axios.create({
+  baseURL: apiUrl,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add request interceptor for logging
+api.interceptors.request.use((config) => {
+  console.log('Making request to:', config.url);
+  return config;
+});
+
+// Add response interceptor for error handling
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('API Error:', error);
+    return Promise.reject(error);
+  }
+);
+
+export const getApiUrl = () => apiUrl;
+
+export const fetchWithCors = async (url: string, options: RequestInit = {}) => {
+  const fullUrl = `${apiUrl}${url}`;
+  console.log('Fetching URL:', fullUrl);
+  
+  const response = await fetch(fullUrl, {
     ...options,
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
       ...options.headers,
     },
   });
@@ -24,4 +51,6 @@ export const fetchWithCors = async (endpoint: string, options: RequestInit = {})
   }
 
   return response;
-}; 
+};
+
+export default api; 

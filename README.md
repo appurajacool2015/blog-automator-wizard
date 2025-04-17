@@ -71,7 +71,7 @@ A powerful tool that helps you convert YouTube videos into blog posts automatica
 
 5. Start the development servers:
    - Frontend: `npm run dev` (runs on port 5173)
-   - Backend: `npm run dev` (runs on port 3004)
+   - Backend: `npm run dev` (runs on port 3005)
 
 ## Troubleshooting
 
@@ -125,7 +125,7 @@ blog-automator-wizard/
 
 ## API Endpoints
 
-### Backend API (Port 3004)
+### Backend API (Port 3005)
 
 - `GET /api/videos/:videoId` - Fetch video details
 - `GET /api/transcript/:videoId` - Get video transcript

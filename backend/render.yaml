@@ -12,4 +12,4 @@ services:
       - key: CORS_ORIGIN
         value: https://sage-baklava-75f4bf.netlify.app
       - key: PORT
-        value: 3004
+        value: 3005

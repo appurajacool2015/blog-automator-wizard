@@ -38,7 +38,7 @@ const VideoList: React.FC<VideoListProps> = ({ channelId, onVideoSelected }) => 
         setRefreshing(true);
         try {
           // Clear backend cache
-          await axios.delete(`http://localhost:3004/api/videos/${channelId}/cache`);
+          await axios.delete(`${import.meta.env.VITE_API_URL}/api/videos/${channelId}/cache`);
           
           // Clear local storage for this channel's videos
           const allVideos = getVideosByChannel(''); // Get all videos
