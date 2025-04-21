@@ -19,6 +19,16 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const port = process.env.PORT || 3005;
 
+// Add root route handler
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Blog Automator Wizard API Server is running',
+    status: 'ok',
+    environment: process.env.NODE_ENV,
+    version: '1.0.0'
+  });
+});
+
 // Configure CORS
 const isDevelopment = process.env.NODE_ENV !== 'production';
 console.log('Current environment:', process.env.NODE_ENV);
@@ -38,6 +48,7 @@ const allowedOrigins = isDevelopment
     ]
   : [
       'https://sage-baklava-75f4bf.netlify.app',
+      'https://blog-automator-wizard.onrender.com',
       process.env.CORS_ORIGIN || 'https://sage-baklava-75f4bf.netlify.app'
     ];
 
