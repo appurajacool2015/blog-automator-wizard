@@ -2,6 +2,29 @@
 
 A powerful tool that helps you convert YouTube videos into blog posts automatically. The application fetches video transcripts, generates summaries, and creates blog-ready content.
 
+## Table of Contents
+
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Deployment](#deployment)
+  - [Backend Deployment (Render)](#backend-deployment-render)
+  - [Frontend Deployment (Netlify)](#frontend-deployment-netlify)
+  - [Environment Files](#environment-files)
+- [Troubleshooting](#troubleshooting)
+  - [Transcript Issues](#transcript-issues)
+  - [Cache Management](#cache-management)
+- [Project Structure](#project-structure)
+- [API Endpoints](#api-endpoints)
+- [Development](#development)
+  - [Frontend Development](#frontend-development)
+  - [Backend Development](#backend-development)
+- [Contributing](#contributing)
+- [License](#license)
+- [Acknowledgments](#acknowledgments)
+
 ## Features
 
 - **Video Content Management**
