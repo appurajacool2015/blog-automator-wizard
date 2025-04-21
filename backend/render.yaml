@@ -3,7 +3,7 @@ services:
     name: blog-automator-wizard
     env: node
     buildCommand: npm install
-    startCommand: node server.js
+    startCommand: npm start
     envVars:
       - key: CORS_ORIGIN
         value: https://sage-baklava-75f4bf.netlify.app
