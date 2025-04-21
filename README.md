@@ -73,6 +73,53 @@ A powerful tool that helps you convert YouTube videos into blog posts automatica
    - Frontend: `npm run dev` (runs on port 5173)
    - Backend: `npm run dev` (runs on port 3005)
 
+## Deployment
+
+### Backend Deployment (Render)
+
+1. Create a new Web Service on Render
+2. Connect to GitHub repository: `https://github.com/appurajacool2015/blog-automator-wizard`
+3. Configure the following settings:
+   - **Branch**: `deployment`
+   - **Root Directory**: `backend`
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+4. Add environment variables:
+   - `PORT`: 3004
+   - `NODE_ENV`: production
+   - `YOUTUBE_API_KEY`: Your YouTube API key
+   - `CORS_ORIGIN`: Your frontend URL
+
+### Frontend Deployment (Netlify)
+
+1. Create a new site on Netlify
+2. Connect to GitHub repository: `https://github.com/appurajacool2015/blog-automator-wizard`
+3. Configure the following settings:
+   - **Base directory**: `/frontend`
+   - **Build command**: `npm install`
+   - **Publish directory**: `dist`
+4. Add environment variables:
+   - `VITE_API_URL`: Your Render backend URL
+   - `VITE_NODE_ENV`: production
+   - `VITE_YOUTUBE_API_KEY`: Your YouTube API key
+
+### Environment Files
+
+#### Backend (.env.production)
+```
+PORT=3004
+NODE_ENV=production
+YOUTUBE_API_KEY=your_youtube_api_key
+CORS_ORIGIN=https://your-frontend-domain.netify.app
+```
+
+#### Frontend (.env.production)
+```
+VITE_API_URL=https://your-backend-domain.onrender.com
+VITE_NODE_ENV=production
+VITE_YOUTUBE_API_KEY=your_youtube_api_key
+```
+
 ## Troubleshooting
 
 ### Transcript Issues
