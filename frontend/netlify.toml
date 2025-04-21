@@ -2,6 +2,11 @@
   command = "npm run build"
   publish = "dist"
 
+[build.environment]
+  VITE_API_URL = "https://blog-automator-wizard.onrender.com"
+  VITE_NODE_ENV = "production"
+  VITE_YOUTUBE_API_KEY = "AIzaSyB5JTPQKWa6Nm3gPHQlrI3ipxAdjVQTWrQ"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
