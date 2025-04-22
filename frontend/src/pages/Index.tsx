@@ -84,7 +84,7 @@ const Index = () => {
         <div className="h-[calc(100%-80px)]">
           {selectedCategoryId && (
             <ChannelList 
-              categoryId={selectedCategoryId} 
+              categoryName={selectedCategoryId} 
               onChannelSelected={handleChannelSelected} 
             />
           )}
@@ -110,7 +110,7 @@ const Index = () => {
       
       {activePanel === 'channels' && selectedCategoryId && (
         <ChannelList 
-          categoryId={selectedCategoryId} 
+          categoryName={selectedCategoryId} 
           onChannelSelected={handleChannelSelected} 
         />
       )}

@@ -197,7 +197,8 @@ const VideoContent: React.FC<VideoContentProps> = ({ videoId }) => {
                     variant="outline" 
                     onClick={async () => {
                       try {
-                        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/transcript-cache`, {
+                        // Clear transcript cache for this video
+                        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/transcript/cache`, {
                           method: 'DELETE',
                         });
                         

@@ -42,12 +42,34 @@ export const deleteCategory = async (name: string): Promise<void> => {
 
 // Channel operations
 export const fetchChannels = async (categoryName?: string): Promise<Channel[]> => {
-  const url = categoryName 
-    ? `${API_BASE_URL}/api/channels?categoryName=${encodeURIComponent(categoryName)}`
-    : `${API_BASE_URL}/api/channels`;
-  const response = await fetch(url);
-  if (!response.ok) throw new Error('Failed to fetch channels');
-  return response.json();
+  try {
+    const url = categoryName 
+      ? `${API_BASE_URL}/api/channels?categoryName=${encodeURIComponent(categoryName)}`
+      : `${API_BASE_URL}/api/channels`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch channels');
+    }
+    
+    const data = await response.json();
+    // If we're fetching channels for a specific category, the response is already an array
+    // If we're fetching all channels, we need to flatten the object into an array
+    if (categoryName) {
+      return data;
+    } else {
+      return Object.entries(data).flatMap(([category, channels]) => 
+        (channels as any[]).map(channel => ({
+          ...channel,
+          categoryName: category
+        }))
+      );
+    }
+  } catch (error) {
+    console.error('Error fetching channels:', error);
+    throw error;
+  }
 };
 
 export const addChannel = async (channelId: string, name: string, categoryName: string): Promise<Channel> => {

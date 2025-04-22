@@ -20,12 +20,12 @@ export interface Video {
 }
 
 export interface VideoDetails {
-  id: string;
-  title: string;
   videoId: string;
-  summary: string;
-  transcript: string;
-  language: string;
+  title: string;
   description: string;
-  error?: string | null;
+  thumbnail: string;
+  publishedAt: string;
+  transcript: string;
+  summary: string;
+  error: string | null;
 }

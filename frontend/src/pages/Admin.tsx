@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -95,7 +94,7 @@ const Admin = () => {
                   <div className="mt-6">
                     <h3 className="text-lg font-medium mb-4">Channels in Selected Category</h3>
                     <ChannelList 
-                      categoryId={selectedCategoryId} 
+                      categoryName={selectedCategoryId} 
                       refreshTrigger={refreshTrigger}
                       isAdmin={true}
                     />

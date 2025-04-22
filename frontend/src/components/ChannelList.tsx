@@ -24,14 +24,14 @@ import { Channel } from '@/types';
 import { Input } from '@/components/ui/input';
 
 interface ChannelListProps {
-  categoryId?: string;
+  categoryName?: string;
   onChannelSelected?: (channelId: string) => void;
   refreshTrigger?: number;
   isAdmin?: boolean;
 }
 
 const ChannelList: React.FC<ChannelListProps> = ({ 
-  categoryId, 
+  categoryName, 
   onChannelSelected,
   refreshTrigger = 0,
   isAdmin = false 
@@ -44,14 +44,14 @@ const ChannelList: React.FC<ChannelListProps> = ({
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!categoryId) {
+    if (!categoryName) {
       setChannels([]);
       return;
     }
     
     const loadChannels = async () => {
       try {
-        const channelsList = await fetchChannels(categoryId);
+        const channelsList = await fetchChannels(categoryName);
         setChannels(channelsList);
         
         // Select the first channel if none is selected and we have channels
@@ -69,7 +69,7 @@ const ChannelList: React.FC<ChannelListProps> = ({
     };
     
     loadChannels();
-  }, [categoryId, refreshTrigger, onChannelSelected, selectedChannelId]);
+  }, [categoryName, refreshTrigger, onChannelSelected, selectedChannelId]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -80,8 +80,8 @@ const ChannelList: React.FC<ChannelListProps> = ({
       });
       
       // Update the channels list
-      if (categoryId) {
-        const updatedChannels = await fetchChannels(categoryId);
+      if (categoryName) {
+        const updatedChannels = await fetchChannels(categoryName);
         setChannels(updatedChannels);
         
         // If the deleted channel was selected, select the first available one
@@ -110,10 +110,10 @@ const ChannelList: React.FC<ChannelListProps> = ({
   };
 
   const handleSaveEdit = async () => {
-    if (!editingChannel || !categoryId) return;
+    if (!editingChannel || !categoryName) return;
     
     try {
-      await updateChannel(editingChannel.id, editName.trim(), categoryId);
+      await updateChannel(editingChannel.id, editName.trim(), categoryName);
       
       toast({
         title: "Success",
@@ -121,7 +121,7 @@ const ChannelList: React.FC<ChannelListProps> = ({
       });
       
       // Update the channels list
-      const updatedChannels = await fetchChannels(categoryId);
+      const updatedChannels = await fetchChannels(categoryName);
       setChannels(updatedChannels);
       setEditingChannel(null);
     } catch (error) {
@@ -148,7 +148,7 @@ const ChannelList: React.FC<ChannelListProps> = ({
         <CardTitle className="text-xl">Channels</CardTitle>
       </CardHeader>
       <CardContent>
-        {!categoryId ? (
+        {!categoryName ? (
           <p className="text-gray-500 text-center py-4">Select a category first</p>
         ) : channels.length === 0 ? (
           <p className="text-gray-500 text-center py-4">No channels found in this category</p>

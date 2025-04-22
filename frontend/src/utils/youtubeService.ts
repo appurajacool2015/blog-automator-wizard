@@ -7,6 +7,17 @@ const API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
 const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3005';
 const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search';
 
+interface VideoDetails {
+  videoId: string;
+  title: string;
+  description: string;
+  thumbnail: string;
+  publishedAt: string;
+  transcript: string;
+  summary: string;
+  error: string | null;
+}
+
 // Function to fetch videos from a channel
 export const fetchChannelVideos = async (channelId: string, maxResults: number = 50): Promise<Video[]> => {
   try {
@@ -50,71 +61,53 @@ export const fetchChannelVideos = async (channelId: string, maxResults: number =
 // Function to fetch video details (transcript and summary)
 export const fetchVideoDetails = async (videoId: string): Promise<VideoDetails> => {
   try {
-    console.log('🔄 Fetching video details from backend:', `${BACKEND_URL}/api/videos/${videoId}`);
-    const response = await fetch(`${BACKEND_URL}/api/videos/${videoId}`, {
-      method: 'GET',
-      mode: 'cors',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    });
+    console.log(`\n=== Fetching video details for: ${videoId} ===`);
+    const response = await fetch(`${BACKEND_URL}/api/videos/${videoId}`);
     
     if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error('Video not found');
-      }
+      console.error(`❌ Error fetching video details: ${response.statusText}`);
       throw new Error(`Failed to fetch video details: ${response.statusText}`);
     }
     
     const data = await response.json();
     console.log('✅ Successfully fetched video details:', data);
     
-    // Fetch transcript
-    console.log('🔄 Fetching transcript from backend:', `${BACKEND_URL}/api/videos/${videoId}/transcript`);
-    const transcriptResponse = await fetch(`${BACKEND_URL}/api/videos/${videoId}/transcript`, {
-      method: 'GET',
-      mode: 'cors',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    });
-    
-    let transcript = '';
-    let transcriptError = null;
-    
-    if (transcriptResponse.ok) {
-      const transcriptData = await transcriptResponse.json();
-      console.log('📝 Transcript response:', transcriptData);
-      
-      if (transcriptData.transcript && typeof transcriptData.transcript === 'string') {
-        transcript = transcriptData.transcript;
-      } else if (transcriptData.error) {
-        transcriptError = transcriptData.error;
-      } else {
-        transcriptError = 'No transcript available';
-      }
-    } else {
-      const errorData = await transcriptResponse.json();
-      transcriptError = errorData.error || 'Failed to fetch transcript';
+    if (!data.transcript) {
+      console.warn('⚠️ No transcript available for this video');
+      return {
+        videoId,
+        title: data.title,
+        description: data.description,
+        thumbnail: data.thumbnail,
+        publishedAt: data.publishedAt,
+        transcript: '',
+        summary: '',
+        error: 'No transcript available. This video might not have captions enabled.'
+      };
     }
-    
-    console.log('✅ Successfully processed transcript response');
     
     return {
-      ...data,
-      transcript,
-      error: transcriptError
+      videoId,
+      title: data.title,
+      description: data.description,
+      thumbnail: data.thumbnail,
+      publishedAt: data.publishedAt,
+      transcript: data.transcript,
+      summary: data.summary,
+      error: data.error
     };
   } catch (error) {
-    console.error('❌ Error fetching video details:', error);
-    if (error instanceof TypeError && error.message.includes('NetworkError')) {
-      throw new Error('Network error: Please check your internet connection and try again');
-    }
-    throw error;
+    console.error('❌ Error in fetchVideoDetails:', error);
+    return {
+      videoId,
+      title: '',
+      description: '',
+      thumbnail: '',
+      publishedAt: '',
+      transcript: '',
+      summary: '',
+      error: error instanceof Error ? error.message : 'Failed to fetch video details'
+    };
   }
 };
 
