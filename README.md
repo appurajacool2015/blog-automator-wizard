@@ -2,6 +2,16 @@
 
 A tool to automatically generate blog posts from YouTube videos.
 
+## Table of Contents
+- [Setup](#setup)
+- [Project Structure](#project-structure)
+- [Features](#features)
+- [API Endpoints](#api-endpoints)
+- [Development](#development)
+- [Production](#production)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Setup
 
 ### Prerequisites
@@ -36,7 +46,7 @@ PORT=3005
 NODE_ENV=development
 YOUTUBE_API_KEY=your_youtube_api_key
 OPENROUTER_API_KEY=your_openrouter_api_key
-CORS_ORIGIN=http://localhost:5173
+CORS_ORIGIN=http://localhost:8080
 APP_URL=http://localhost:3005
 
 # Frontend (.env)
@@ -56,7 +66,7 @@ npm run dev
 ```
 
 The application will be available at:
-- Frontend: http://localhost:5173
+- Frontend: http://localhost:8080
 - Backend: http://localhost:3005
 
 ## Project Structure
@@ -72,8 +82,8 @@ blog-automator-wizard/
 │   │   │   └── transcript.js  # Transcript handling
 │   │   ├── cache.js           # Video cache management
 │   │   ├── transcriptCache.js # Transcript caching
-│   │   ├── summaryCache.js    # Summary caching
-│   │   └── server.js          # Express server setup
+│   │   └── summaryCache.js    # Summary caching
+│   ├── server.js              # Express server setup
 │   ├── data/                  # Data storage
 │   │   ├── cache/            # Cache files
 │   │   │   ├── transcripts.json
