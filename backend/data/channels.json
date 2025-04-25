@@ -27,6 +27,22 @@
     {
       "id": "UC9l7tHD7VC4orBaP26Ad2JQ",
       "name": "Be An Entrepreneur - Taresh Singhania"
+    },
+    {
+      "id": "UC0m81bQuthaQZmFbXEY9QSw",
+      "name": "AICodeKing"
+    },
+    {
+      "id": "UCYq9VOkrH3uv7IiWcDKm5zw",
+      "name": "BuildWithAI"
+    },
+    {
+      "id": "UCEzrs7gK6Nf6t_tadEprzxQ",
+      "name": "aiwithbrandon"
+    },
+    {
+      "id": "UCh9nVJoWXmFb7sLApWGcLPQ",
+      "name": "CodeBasics"
     }
   ],
   "Stocks": [
@@ -135,6 +151,12 @@
     {
       "id": "UCXqdkLhS3A5xqiwsdrjkXJw",
       "name": "Technical Israr"
+    }
+  ],
+  "Business": [
+    {
+      "id": "UChYs-_zjKRYhdMddjx-NPLw",
+      "name": "SinghinUSA"
     }
   ]
 }

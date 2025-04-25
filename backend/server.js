@@ -11,7 +11,6 @@ import videoRoutes from './src/routes/videos.js';
 import transcriptRoutes from './src/routes/transcript.js';
 import channelRoutes from './src/routes/channels.js';
 import categoryRoutes from './src/routes/categories.js';
-// import summaryRoutes from './src/routes/summary.js';
 
 // Load environment variables based on NODE_ENV
 const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
