@@ -102,3 +102,30 @@ export const updateChannel = async (channelId: string, name: string, categoryNam
   if (!response.ok) throw new Error('Failed to update channel');
   return response.json();
 };
+
+export const updateChannelOrder = async (categoryId: string, channels: Channel[]): Promise<void> => {
+  try {
+    // The categoryId parameter is actually the category name in this case
+    const categoryName = categoryId;
+    console.log('Updating channel order:', { categoryName, channels });
+    
+    const response = await fetch(`${API_BASE_URL}/api/channels/order`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ categoryName, channels }),
+    });
+    
+    const data = await response.json();
+    console.log('Update channel order response:', data);
+    
+    if (!response.ok) {
+      console.error('Failed to update channel order:', data);
+      throw new Error(data.error || 'Failed to update channel order');
+    }
+  } catch (error) {
+    console.error('Error in updateChannelOrder:', error);
+    throw error;
+  }
+};

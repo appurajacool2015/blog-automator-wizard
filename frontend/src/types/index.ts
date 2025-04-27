@@ -6,8 +6,6 @@ export interface Category {
 export interface Channel {
   id: string;
   name: string;
-  youtubeId: string;
-  categoryId: string;
 }
 
 export interface Video {

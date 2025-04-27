@@ -1,4 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { Button } from "@/components/ui/button";
 import { 
   Card, 
@@ -19,29 +35,125 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { Trash, Edit, Youtube } from "lucide-react";
-import { fetchChannels, deleteChannel, addChannel, updateChannel } from '@/utils/apiService';
+import { fetchChannels, deleteChannel, updateChannel, updateChannelOrder } from '@/utils/apiService';
 import { Channel } from '@/types';
-import { Input } from '@/components/ui/input';
 
-interface ChannelListProps {
-  categoryName?: string;
-  onChannelSelected?: (channelId: string) => void;
-  refreshTrigger?: number;
-  isAdmin?: boolean;
-}
+// SortableItem component
+const SortableItem = ({ channel, isSelected, onSelect, isAdmin, onEdit, onDelete }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({
+    id: channel.id,
+    data: channel
+  });
 
-const ChannelList: React.FC<ChannelListProps> = ({ 
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const handleClick = (e) => {
+    // Only handle click if it's not a drag operation
+    if (!isDragging) {
+      onSelect(channel.id);
+    }
+  };
+
+  return (
+    <li
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={`flex items-center justify-between p-2 border rounded-md hover:bg-gray-50 cursor-pointer ${
+        isSelected ? 'bg-blue-50 border-blue-300' : ''
+      }`}
+      onClick={handleClick}
+    >
+      <div className="flex items-center gap-2 flex-1">
+        <Youtube size={16} className="text-red-500" />
+        <span className="font-medium select-none">
+          {channel.name}
+        </span>
+      </div>
+      {isAdmin && (
+        <div 
+          className="flex items-center gap-1"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Button size="sm" variant="ghost" onClick={(e) => {
+            e.stopPropagation();
+            onEdit(channel);
+          }}>
+            <Edit size={16} />
+          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Trash size={16} className="text-red-500" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will delete the channel and any associated data.
+                  This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction 
+                  className="bg-red-500 hover:bg-red-600"
+                  onClick={() => onDelete(channel.id)}
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      )}
+    </li>
+  );
+};
+
+const ChannelList = ({ 
   categoryName, 
   onChannelSelected,
   refreshTrigger = 0,
   isAdmin = false 
 }) => {
-  const [channels, setChannels] = useState<Channel[]>([]);
-  const [editingChannel, setEditingChannel] = useState<Channel | null>(null);
+  const [channels, setChannels] = useState([]);
+  const [selectedChannelId, setSelectedChannelId] = useState(null);
+  const [editingChannel, setEditingChannel] = useState(null);
   const [editName, setEditName] = useState('');
-  const [editYoutubeId, setEditYoutubeId] = useState('');
-  const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      // Configure the drag activation constraints
+      activationConstraint: {
+        // Only start dragging after moving 8px
+        distance: 8,
+        // Require the pointer to be pressed for 250ms before dragging starts
+        delay: 250,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     if (!categoryName) {
@@ -52,14 +164,19 @@ const ChannelList: React.FC<ChannelListProps> = ({
     const loadChannels = async () => {
       try {
         const channelsList = await fetchChannels(categoryName);
-        setChannels(channelsList);
+        // Add categoryName to each channel
+        const channelsWithCategory = channelsList.map(channel => ({
+          ...channel,
+          categoryName
+        }));
+        setChannels(channelsWithCategory);
         
-        // Select the first channel if none is selected and we have channels
-        if (channelsList.length > 0 && !selectedChannelId) {
-          setSelectedChannelId(channelsList[0].id);
-          onChannelSelected?.(channelsList[0].id);
+        if (channelsWithCategory.length > 0 && !selectedChannelId) {
+          setSelectedChannelId(channelsWithCategory[0].id);
+          onChannelSelected?.(channelsWithCategory[0].id);
         }
       } catch (error) {
+        console.error('Error loading channels:', error);
         toast({
           title: "Error",
           description: "Failed to fetch channels",
@@ -69,9 +186,58 @@ const ChannelList: React.FC<ChannelListProps> = ({
     };
     
     loadChannels();
-  }, [categoryName, refreshTrigger, onChannelSelected, selectedChannelId]);
+  }, [categoryName, refreshTrigger]);
 
-  const handleDelete = async (id: string) => {
+  const handleDragEnd = async (event) => {
+    console.log('Drag end event:', event);
+    const { active, over } = event;
+    
+    if (!active || !over || active.id === over.id || !categoryName) {
+      return;
+    }
+
+    try {
+      const oldIndex = channels.findIndex((item) => item.id === active.id);
+      const newIndex = channels.findIndex((item) => item.id === over.id);
+      
+      if (oldIndex === -1 || newIndex === -1) {
+        console.error('Could not find channel indices', { oldIndex, newIndex, active, over });
+        return;
+      }
+
+      // Add categoryName to each channel before reordering
+      const channelsWithCategory = channels.map(channel => ({
+        ...channel,
+        categoryName
+      }));
+
+      const newChannels = arrayMove(channelsWithCategory, oldIndex, newIndex);
+      console.log('New channel order:', newChannels);
+      
+      // Update UI immediately for better UX
+      setChannels(newChannels);
+      
+      // Make API call
+      console.log('Updating channel order for category:', categoryName);
+      await updateChannelOrder(categoryName, newChannels);
+      
+      toast({
+        title: "Success",
+        description: "Channel order updated",
+      });
+    } catch (error) {
+      console.error('Error updating channel order:', error);
+      // Revert to original order on error
+      setChannels(channels);
+      toast({
+        title: "Error",
+        description: "Failed to update channel order",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDelete = async (id) => {
     try {
       await deleteChannel(id);
       toast({
@@ -103,10 +269,9 @@ const ChannelList: React.FC<ChannelListProps> = ({
     }
   };
 
-  const handleEdit = (channel: Channel) => {
+  const handleEdit = (channel) => {
     setEditingChannel(channel);
     setEditName(channel.name);
-    setEditYoutubeId(channel.youtubeId);
   };
 
   const handleSaveEdit = async () => {
@@ -137,8 +302,10 @@ const ChannelList: React.FC<ChannelListProps> = ({
     setEditingChannel(null);
   };
 
-  const handleChannelClick = (channelId: string) => {
+  const handleChannelClick = (channelId) => {
+    console.log('Channel clicked:', channelId);
     setSelectedChannelId(channelId);
+    // Pass the channel ID which is the YouTube channel ID
     onChannelSelected?.(channelId);
   };
 
@@ -153,85 +320,30 @@ const ChannelList: React.FC<ChannelListProps> = ({
         ) : channels.length === 0 ? (
           <p className="text-gray-500 text-center py-4">No channels found in this category</p>
         ) : (
-          <ul className="space-y-2">
-            {channels.map((channel) => (
-              <li key={channel.id}>
-                {editingChannel?.id === channel.id && isAdmin ? (
-                  <div className="space-y-2 p-2 border rounded-md">
-                    <Input
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      placeholder="Channel Name"
-                      className="mb-2"
-                    />
-                    <Input
-                      value={editYoutubeId}
-                      onChange={(e) => setEditYoutubeId(e.target.value)}
-                      placeholder="YouTube Channel ID"
-                      className="mb-2"
-                    />
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={handleSaveEdit} className="flex-1">Save</Button>
-                      <Button size="sm" variant="outline" onClick={handleCancelEdit}>Cancel</Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div 
-                    className={`flex items-center justify-between p-2 border rounded-md hover:bg-gray-50 cursor-pointer ${
-                      channel.id === selectedChannelId ? 'bg-blue-50 border-blue-300' : ''
-                    }`}
-                    onClick={() => handleChannelClick(channel.id)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Youtube size={16} className="text-red-500" />
-                      <span className="font-medium">{channel.name}</span>
-                    </div>
-                    
-                    {isAdmin && (
-                      <div className="flex items-center gap-1">
-                        <Button size="sm" variant="ghost" onClick={(e) => {
-                          e.stopPropagation();
-                          handleEdit(channel);
-                        }}>
-                          <Edit size={16} />
-                        </Button>
-                        
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button 
-                              size="sm" 
-                              variant="ghost" 
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <Trash size={16} className="text-red-500" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This will delete the channel and any associated data.
-                                This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction 
-                                className="bg-red-500 hover:bg-red-600"
-                                onClick={() => handleDelete(channel.id)}
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={channels.map(channel => channel.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <ul className="space-y-2">
+                {channels.map((channel) => (
+                  <SortableItem
+                    key={channel.id}
+                    channel={channel}
+                    isSelected={channel.id === selectedChannelId}
+                    onSelect={handleChannelClick}
+                    isAdmin={isAdmin}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </ul>
+            </SortableContext>
+          </DndContext>
         )}
       </CardContent>
     </Card>
