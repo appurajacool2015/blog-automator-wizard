@@ -53,19 +53,9 @@ const allowedOrigins = isDevelopment
       process.env.CORS_ORIGIN || 'https://sage-baklava-75f4bf.netlify.app'
     ];
 
-// Apply CORS middleware before other middleware
+// Apply CORS middleware with proper configuration
 app.use(cors({
-  origin: function(origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.error('CORS Error: Origin not allowed:', origin);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -73,19 +63,7 @@ app.use(cors({
 
 app.use(express.json());
 
-// Add CORS headers to all responses
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (isDevelopment || allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Credentials', 'true');
-  }
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  next();
-});
-
-// Handle OPTIONS requests
+// No need for additional CORS headers since the cors middleware handles it
 app.options('*', cors());
 
 // Store data in the backend directory
