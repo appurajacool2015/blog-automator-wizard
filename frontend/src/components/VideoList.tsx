@@ -11,6 +11,7 @@ import { fetchChannelVideos } from '@/utils/youtubeService';
 import { Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import axios from 'axios';
+import { useToast } from "@/components/ui/use-toast";
 
 interface VideoListProps {
   channelId?: string;
@@ -22,8 +23,13 @@ const VideoList: React.FC<VideoListProps> = ({ channelId, onVideoSelected }) => 
   const [loading, setLoading] = useState(false);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const loadVideos = async (forceRefresh = false) => {
+    console.log('loadVideos called with channelId:', channelId, 'forceRefresh:', forceRefresh);
+    setError(null);
+    
     if (!channelId) {
       setVideos([]);
       setSelectedVideoId(null);
@@ -33,51 +39,42 @@ const VideoList: React.FC<VideoListProps> = ({ channelId, onVideoSelected }) => 
     setLoading(true);
     
     try {
-      // If force refresh is true, clear both backend and local storage cache
+      let videosList;
+      
       if (forceRefresh) {
         setRefreshing(true);
         try {
-          // Clear backend cache
-          await axios.delete(`${import.meta.env.VITE_API_URL}/api/videos/${channelId}/cache`);
-          
-          // Clear local storage for this channel's videos
-          const allVideos = getVideosByChannel(''); // Get all videos
-          const filteredVideos = allVideos.filter(v => v.channelId !== channelId);
-          localStorage.setItem('blog-automator-videos', JSON.stringify(filteredVideos));
+          await axios.delete(`${import.meta.env.VITE_API_URL}/api/videos/channel/${channelId}/cache`);
+          console.log('Cache cleared successfully');
         } catch (error) {
           console.error('Error clearing cache:', error);
         }
       }
 
-      // Always fetch fresh videos from API when refreshing
-      if (forceRefresh) {
-        const fetchedVideos = await fetchChannelVideos(channelId);
-        setVideos(fetchedVideos);
-        
-        // Select the first video if available
-        if (fetchedVideos.length > 0 && !selectedVideoId) {
-          setSelectedVideoId(fetchedVideos[0].videoId);
-          onVideoSelected?.(fetchedVideos[0].videoId);
+      // Always try to fetch from API
+      try {
+        console.log('Fetching videos from API for channel:', channelId);
+        videosList = await fetchChannelVideos(channelId);
+        console.log('Videos fetched successfully:', videosList);
+      } catch (error) {
+        console.error('Error fetching videos:', error);
+        if (error instanceof Error) {
+          setError(error.message);
+          toast({
+            title: "Error fetching videos",
+            description: error.message,
+            variant: "destructive",
+          });
         }
-      } else {
-        // For initial load, check local storage first
-        let videosList = getVideosByChannel(channelId);
-        
-        // If no videos in local storage, fetch from API
-        if (videosList.length === 0) {
-          videosList = await fetchChannelVideos(channelId);
-        }
-        
-        setVideos(videosList);
-        
-        // Select the first video if available
-        if (videosList.length > 0 && !selectedVideoId) {
-          setSelectedVideoId(videosList[0].videoId);
-          onVideoSelected?.(videosList[0].videoId);
-        }
+        return;
       }
-    } catch (error) {
-      console.error('Error loading videos:', error);
+      
+      setVideos(videosList);
+      
+      if (videosList.length > 0 && !selectedVideoId) {
+        setSelectedVideoId(videosList[0].videoId);
+        onVideoSelected?.(videosList[0].videoId);
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -86,7 +83,7 @@ const VideoList: React.FC<VideoListProps> = ({ channelId, onVideoSelected }) => 
 
   useEffect(() => {
     loadVideos();
-  }, [channelId, onVideoSelected, selectedVideoId]);
+  }, [channelId]);
 
   const handleRefresh = () => {
     loadVideos(true);
@@ -127,6 +124,18 @@ const VideoList: React.FC<VideoListProps> = ({ channelId, onVideoSelected }) => 
         {loading ? (
           <div className="flex items-center justify-center py-10">
             <Loader2 className="animate-spin h-8 w-8 text-gray-400" />
+          </div>
+        ) : error ? (
+          <div className="text-center py-4">
+            <p className="text-red-500">{error}</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => loadVideos(true)}
+              className="mt-2"
+            >
+              Try Again
+            </Button>
           </div>
         ) : !channelId ? (
           <p className="text-gray-500 text-center py-4">Select a channel first</p>

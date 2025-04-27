@@ -23,6 +23,11 @@ export const fetchChannelVideos = async (channelId: string, maxResults: number =
   try {
     console.log(`Fetching ${maxResults} videos for channel: ${channelId}`);
     
+    if (!API_KEY) {
+      console.error('YouTube API key is not configured');
+      throw new Error('YouTube API key is not configured');
+    }
+    
     const response = await axios.get(YOUTUBE_API_URL, {
       params: {
         part: 'snippet',
@@ -34,27 +39,48 @@ export const fetchChannelVideos = async (channelId: string, maxResults: number =
       }
     });
     
+    console.log('YouTube API Response status:', response.status);
+    
     if (!response.data || !response.data.items) {
-      throw new Error('No data returned from YouTube API');
+      console.error('No videos found for channel:', channelId);
+      console.error('API Response:', response.data);
+      return [];
     }
     
-    const videos: Video[] = response.data.items.map((item: any) => ({
-      id: item.id.videoId,
-      title: item.snippet.title,
-      videoId: item.id.videoId,
-      channelId,
-      thumbnail: item.snippet.thumbnails.medium?.url || item.snippet.thumbnails.default?.url,
-      publishedAt: item.snippet.publishedAt,
-    }));
+    const videos: Video[] = response.data.items.map((item: any) => {
+      const video = {
+        id: item.id.videoId,
+        title: item.snippet.title,
+        videoId: item.id.videoId,
+        channelId,
+        thumbnail: item.snippet.thumbnails.medium?.url || item.snippet.thumbnails.default?.url,
+        publishedAt: item.snippet.publishedAt,
+      };
+      console.log('Processing video:', { id: video.id, title: video.title });
+      return video;
+    });
     
+    console.log(`Successfully fetched ${videos.length} videos for channel:`, channelId);
     // Save videos to local storage
     saveVideos(videos);
     
     return videos;
   } catch (error) {
-    console.error('Error fetching videos:', error);
-    // Return mock data as fallback
-    return generateMockVideos(channelId, maxResults);
+    console.error('Error fetching videos for channel:', channelId);
+    if (axios.isAxiosError(error)) {
+      console.error('API Error:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      if (error.response?.status === 403) {
+        throw new Error('YouTube API quota exceeded or API key is invalid');
+      }
+      if (error.response?.status === 404) {
+        throw new Error('Channel not found');
+      }
+    }
+    throw error;
   }
 };
 

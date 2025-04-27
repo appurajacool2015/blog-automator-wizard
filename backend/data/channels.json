@@ -1,58 +1,82 @@
 {
   "AI": [
     {
-      "id": "UCVLuuiYaYGOgp0r42YnnUuA",
-      "name": "Harsh Vira"
+      "id": "UCEzrs7gK6Nf6t_tadEprzxQ",
+      "name": "aiwithbrandon",
+      "categoryName": "AI"
     },
     {
       "id": "UC7gUrNEKyuqpHsDTY_jVZ7g",
-      "name": "BuYOUTUBE THINK"
-    },
-    {
-      "id": "UCOrS4ObeJ08FmsVG9Fwhmsg",
-      "name": "Busy Funda"
-    },
-    {
-      "id": "UClZU5ouD9LkfgrelmL2auTg",
-      "name": "AajTak-AI"
+      "name": "BuYOUTUBE THINK",
+      "categoryName": "AI"
     },
     {
       "id": "UCBndAQxGxEb3M-oXL1ohrVg",
-      "name": "Damini Tripathi"
+      "name": "Damini Tripathi",
+      "categoryName": "AI"
+    },
+    {
+      "id": "UCVLuuiYaYGOgp0r42YnnUuA",
+      "name": "Harsh Vira",
+      "categoryName": "AI"
+    },
+    {
+      "id": "UCOrS4ObeJ08FmsVG9Fwhmsg",
+      "name": "Busy Funda",
+      "categoryName": "AI"
+    },
+    {
+      "id": "UClZU5ouD9LkfgrelmL2auTg",
+      "name": "AajTak-AI",
+      "categoryName": "AI"
     },
     {
       "id": "UCy71Sv5TVBbn5BYETRQV22Q",
-      "name": "Robin Ebers"
+      "name": "Robin Ebers",
+      "categoryName": "AI"
     },
     {
       "id": "UC9l7tHD7VC4orBaP26Ad2JQ",
-      "name": "Be An Entrepreneur - Taresh Singhania"
+      "name": "Be An Entrepreneur - Taresh Singhania",
+      "categoryName": "AI"
     },
     {
       "id": "UC0m81bQuthaQZmFbXEY9QSw",
-      "name": "AICodeKing"
+      "name": "AICodeKing",
+      "categoryName": "AI"
     },
     {
       "id": "UCYq9VOkrH3uv7IiWcDKm5zw",
-      "name": "BuildWithAI"
-    },
-    {
-      "id": "UCEzrs7gK6Nf6t_tadEprzxQ",
-      "name": "aiwithbrandon"
+      "name": "BuildWithAI",
+      "categoryName": "AI"
     },
     {
       "id": "UCh9nVJoWXmFb7sLApWGcLPQ",
-      "name": "CodeBasics"
+      "name": "CodeBasics",
+      "categoryName": "AI"
+    },
+    {
+      "id": "UC8-RRjbgkbWzhHqF8K-HWNg",
+      "name": "Ritesh Hegde - Your No-Code Partner",
+      "categoryName": "AI"
     }
   ],
   "Stocks": [
+    {
+      "id": "UCM7yoOhnMcfrEZ-5i9m-WFA",
+      "name": "Sonia Shenoy"
+    },
+    {
+      "id": "UCihPYlorLXjroDGnQL17YvQ",
+      "name": "TradingWithVivek"
+    },
     {
       "id": "UCqW8jxh4tH1Z1sWPbkGWL4g",
       "name": "Akshat Shrivastava"
     },
     {
-      "id": "UCihPYlorLXjroDGnQL17YvQ",
-      "name": "TradingWithVivek"
+      "id": "UC6miSOTA9k33pwTE5Pd42zQ",
+      "name": "PaisaSmart"
     },
     {
       "id": "UCtnItzU7q_bA1eoEBjqcVrw",
@@ -63,16 +87,8 @@
       "name": "Paisa Bolta Hai"
     },
     {
-      "id": "UC6miSOTA9k33pwTE5Pd42zQ",
-      "name": "PaisaSmart"
-    },
-    {
       "id": "UCB7GnQlJPIL6rBBqEoX87vA",
       "name": "SOIC"
-    },
-    {
-      "id": "UCkGjGT2B7LoDyL2T4pHsUqw",
-      "name": "Financially Free"
     },
     {
       "id": "UCQIRijkQ8zNDe_jR0RhZpVA",
@@ -81,6 +97,10 @@
     {
       "id": "UCTR2O-hOdd6yhSCsUiD_JIw",
       "name": "Shrija Saha"
+    },
+    {
+      "id": "UCkGjGT2B7LoDyL2T4pHsUqw",
+      "name": "Financially Free"
     },
     {
       "id": "UC79CKmUNEP34qLhEOReQfwA",
@@ -97,10 +117,6 @@
     {
       "id": "UC6HlGuJZ0_M_rSgm0hoRhRDQ",
       "name": "Rakesh Bansal"
-    },
-    {
-      "id": "UCM7yoOhnMcfrEZ-5i9m-WFA",
-      "name": "Sonia Shenoy"
     },
     {
       "id": "UCDzgIFSnfTKqBUbaXsjSQLQ",
@@ -157,6 +173,12 @@
     {
       "id": "UChYs-_zjKRYhdMddjx-NPLw",
       "name": "SinghinUSA"
+    }
+  ],
+  "Sdfsdf": [
+    {
+      "id": "sdfsdf",
+      "name": "sdfsdf"
     }
   ]
 }

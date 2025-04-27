@@ -124,4 +124,33 @@ router.delete('/:channelId', async (req, res) => {
   }
 });
 
-export default router; 
+// Update channel order
+router.post('/order', async (req, res) => {
+  try {
+    const { categoryName, channels } = req.body;
+
+    if (!categoryName || !Array.isArray(channels)) {
+      return res.status(400).json({ error: 'Category name and channels array are required' });
+    }
+
+    const normalizedCategoryName = normalizeCategoryName(categoryName);
+    const channelsFilePath = path.join(process.cwd(), 'data', 'channels.json');
+    const data = await fs.readFile(channelsFilePath, 'utf-8');
+    const allChannels = JSON.parse(data);
+
+    if (!allChannels[normalizedCategoryName]) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
+
+    // Update the order of channels in the specified category
+    allChannels[normalizedCategoryName] = channels;
+
+    await fs.writeFile(channelsFilePath, JSON.stringify(allChannels, null, 2));
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error updating channel order:', error);
+    res.status(500).json({ error: 'Failed to update channel order' });
+  }
+});
+
+export default router;

@@ -1,4 +1,3 @@
-
 import { Category, Channel, Video, VideoDetails } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -137,21 +136,29 @@ export const getVideos = (): Video[] => {
 
 export const getVideosByChannel = (channelId: string): Video[] => {
   const videos = getVideos();
-  return videos
+  console.log('All videos in storage:', videos);
+  console.log('Filtering for channelId:', channelId);
+  const filteredVideos = videos
     .filter(v => v.channelId === channelId)
     .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+  console.log('Filtered videos:', filteredVideos);
+  return filteredVideos;
 };
 
 export const saveVideos = (videos: Video[]): void => {
+  console.log('Saving new videos:', videos);
   const existingVideos = getVideos();
+  console.log('Existing videos:', existingVideos);
   
   // Find videos that aren't already in the list
   const newVideos = videos.filter(video => 
     !existingVideos.some(existing => existing.videoId === video.videoId)
   );
+  console.log('New videos to add:', newVideos);
   
   const updatedVideos = [...existingVideos, ...newVideos];
   localStorage.setItem(LOCAL_STORAGE_KEYS.VIDEOS, JSON.stringify(updatedVideos));
+  console.log('Updated videos in storage:', updatedVideos);
 };
 
 // Video details operations
