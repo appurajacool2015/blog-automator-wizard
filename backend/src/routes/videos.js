@@ -143,11 +143,6 @@ router.get('/:videoId', async (req, res) => {
             },
             body: JSON.stringify({
               model: 'deepseek/deepseek-chat-v3-0324:free',
-              // model: 'tngtech/deepseek-r1t-chimera:free',
-              // model: 'deepseek/deepseek-r1:free'
-              // model: 'deepseek/deepseek-chat-v3-0324:free'
-              // model: 'google/gemini-2.0-flash-exp:free'
-              // model: 'google/gemini-2.0-flash-exp:free'
               messages: [
                 {
                   role: 'system',

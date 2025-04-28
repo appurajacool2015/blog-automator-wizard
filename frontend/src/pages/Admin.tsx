@@ -1,3 +1,14 @@
+/**
+ * Admin dashboard component that provides management interface for:
+ * - Creating and managing categories
+ * - Creating and managing channels within categories
+ * 
+ * Features:
+ * - Tab-based interface for category/channel management
+ * - Forms for adding new categories and channels
+ * - List views with edit/delete functionality
+ * - Responsive grid layout
+ */
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

@@ -1,3 +1,18 @@
+/**
+ * DraggableChannelList component - A specialized version of ChannelList for the homepage
+ * that provides drag-and-drop reordering functionality without admin features.
+ * 
+ * Features:
+ * - Drag and drop channel reordering with DndKit
+ * - Real-time order updates to backend
+ * - Visual feedback during drag operations
+ * - Touch-friendly with configurable drag constraints
+ * - Channel selection for video viewing
+ * 
+ * Props:
+ * - categoryName: ID of the current category
+ * - onChannelSelected: Callback when a channel is selected
+ */
 import React, { useState, useEffect } from 'react';
 import {
   DndContext,
@@ -73,13 +88,14 @@ const DraggableChannelList = ({
   const [channels, setChannels] = useState<Channel[]>([]);
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null);
   const { toast } = useToast();
+  const [isDragging, setIsDragging] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 3,
-        delay: 0,
-        tolerance: 0,
+        distance: 8, // Increased distance threshold
+        delay: 100,  // Added small delay
+        tolerance: 5,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -115,7 +131,12 @@ const DraggableChannelList = ({
     loadChannels();
   }, [categoryName]);
 
+  const handleDragStart = () => {
+    setIsDragging(true);
+  };
+
   const handleDragEnd = async (event) => {
+    setIsDragging(false);
     const { active, over } = event;
     
     if (!active || !over || active.id === over.id || !categoryName) {
@@ -150,8 +171,10 @@ const DraggableChannelList = ({
   };
 
   const handleChannelClick = (channelId: string) => {
-    setSelectedChannelId(channelId);
-    onChannelSelected?.(channelId);
+    if (!isDragging) {
+      setSelectedChannelId(channelId);
+      onChannelSelected?.(channelId);
+    }
   };
 
   return (
@@ -168,6 +191,7 @@ const DraggableChannelList = ({
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
             <SortableContext

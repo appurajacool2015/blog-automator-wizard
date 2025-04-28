@@ -29,10 +29,10 @@ const VideoList: React.FC<VideoListProps> = ({ channelId, onVideoSelected }) => 
   const loadVideos = async (forceRefresh = false) => {
     console.log('loadVideos called with channelId:', channelId, 'forceRefresh:', forceRefresh);
     setError(null);
+    setSelectedVideoId(null); // Reset selected video when loading new videos
     
     if (!channelId) {
       setVideos([]);
-      setSelectedVideoId(null);
       return;
     }
 
@@ -51,29 +51,33 @@ const VideoList: React.FC<VideoListProps> = ({ channelId, onVideoSelected }) => 
         }
       }
 
-      // Always try to fetch from API
-      try {
+      // First try to get from local cache
+      videosList = getVideosByChannel(channelId);
+      
+      // If no videos in cache or force refresh, fetch from API
+      if (!videosList?.length || forceRefresh) {
         console.log('Fetching videos from API for channel:', channelId);
         videosList = await fetchChannelVideos(channelId);
         console.log('Videos fetched successfully:', videosList);
-      } catch (error) {
-        console.error('Error fetching videos:', error);
-        if (error instanceof Error) {
-          setError(error.message);
-          toast({
-            title: "Error fetching videos",
-            description: error.message,
-            variant: "destructive",
-          });
-        }
-        return;
       }
       
       setVideos(videosList);
       
+      // Only auto-select first video if we have videos and no video is currently selected
       if (videosList.length > 0 && !selectedVideoId) {
         setSelectedVideoId(videosList[0].videoId);
         onVideoSelected?.(videosList[0].videoId);
+      }
+    } catch (error) {
+      console.error('Error fetching videos:', error);
+      setVideos([]); // Clear videos on error
+      if (error instanceof Error) {
+        setError(error.message);
+        toast({
+          title: "Error fetching videos",
+          description: error.message,
+          variant: "destructive",
+        });
       }
     } finally {
       setLoading(false);
@@ -82,8 +86,16 @@ const VideoList: React.FC<VideoListProps> = ({ channelId, onVideoSelected }) => 
   };
 
   useEffect(() => {
+    setVideos([]); // Clear videos when channel changes
+    setSelectedVideoId(null); // Reset selected video when channel changes
     loadVideos();
-  }, [channelId]);
+    
+    // Cleanup function
+    return () => {
+      setVideos([]);
+      setSelectedVideoId(null);
+    };
+  }, [channelId]); // Only depend on channelId changes
 
   const handleRefresh = () => {
     loadVideos(true);
