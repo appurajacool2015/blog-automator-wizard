@@ -1,5 +1,5 @@
 import { Video, VideoDetails } from '../types';
-import { saveVideos, saveVideoDetails } from './dataService';
+import { addVideos, saveVideoDetails } from './dataService';
 import axios from 'axios';
 
 // Using environment variables
@@ -61,8 +61,8 @@ export const fetchChannelVideos = async (channelId: string, maxResults: number =
     });
     
     console.log(`Successfully fetched ${videos.length} videos for channel:`, channelId);
-    // Save videos to local storage
-    saveVideos(videos);
+    // Save videos to local storage using addVideos instead of saveVideos
+    addVideos(videos);
     
     return videos;
   } catch (error) {

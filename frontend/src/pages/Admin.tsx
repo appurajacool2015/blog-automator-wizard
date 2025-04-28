@@ -8,10 +8,10 @@ import CategoryForm from '@/components/CategoryForm';
 import ChannelForm from '@/components/ChannelForm';
 import CategoryList from '@/components/CategoryList';
 import ChannelList from '@/components/ChannelList';
-import { initializeWithExampleData } from '@/utils/dataService';
 
 const Admin = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>(undefined);
+  const [selectedChannelId, setSelectedChannelId] = useState<string | undefined>(undefined);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [activeTab, setActiveTab] = useState('categories');
 
@@ -27,9 +27,8 @@ const Admin = () => {
     setSelectedCategoryId(categoryId);
   };
 
-  const handleInitializeData = () => {
-    initializeWithExampleData();
-    setRefreshTrigger(prev => prev + 1);
+  const handleChannelSelected = (channelId: string) => {
+    setSelectedChannelId(channelId);
   };
 
   return (
@@ -45,9 +44,6 @@ const Admin = () => {
                 </Button>
               </Link>
             </div>
-            <Button variant="outline" size="sm" onClick={handleInitializeData}>
-              Initialize Example Data
-            </Button>
           </div>
           <h1 className="text-3xl font-bold flex items-center">
             <Settings className="mr-2 h-8 w-8" />
@@ -97,6 +93,7 @@ const Admin = () => {
                       categoryName={selectedCategoryId} 
                       refreshTrigger={refreshTrigger}
                       isAdmin={true}
+                      onChannelSelected={handleChannelSelected}
                     />
                   </div>
                 </Card>

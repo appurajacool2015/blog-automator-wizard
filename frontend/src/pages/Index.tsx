@@ -8,6 +8,7 @@ import VideoContent from '@/components/VideoContent';
 import { fetchCategories } from '@/utils/apiService';
 import { useIsMobile } from '@/hooks/use-mobile';
 import CategoryDropdown from '@/components/CategoryDropdown';
+import DraggableChannelList from '@/components/DraggableChannelList';
 
 const Index = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>(undefined);
@@ -83,7 +84,7 @@ const Index = () => {
         
         <div className="h-[calc(100%-80px)]">
           {selectedCategoryId && (
-            <ChannelList 
+            <DraggableChannelList 
               categoryName={selectedCategoryId} 
               onChannelSelected={handleChannelSelected} 
             />
@@ -109,7 +110,7 @@ const Index = () => {
       )}
       
       {activePanel === 'channels' && selectedCategoryId && (
-        <ChannelList 
+        <DraggableChannelList 
           categoryName={selectedCategoryId} 
           onChannelSelected={handleChannelSelected} 
         />

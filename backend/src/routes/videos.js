@@ -129,6 +129,10 @@ router.get('/:videoId', async (req, res) => {
         } else {
           // Generate new summary using OpenRouter API
           console.log('🔄 Generating summary using OpenRouter API');
+          if (!process.env.OPENROUTER_API_KEY) {
+            throw new Error('OpenRouter API key is not configured');
+          }
+
           const summaryResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -157,24 +161,30 @@ router.get('/:videoId', async (req, res) => {
           const summaryData = await summaryResponse.json();
           
           if (!summaryResponse.ok) {
-            console.error('❌ OpenRouter API error:', summaryData);
-            throw new Error(`OpenRouter API error: ${summaryData.error?.message || summaryResponse.statusText}`);
+            console.error('❌ OpenRouter API error:', JSON.stringify(summaryData, null, 2));
+            const errorMessage = summaryData.error?.message || summaryResponse.statusText;
+            if (summaryResponse.status === 401) {
+              throw new Error('OpenRouter API key is invalid or expired');
+            } else if (summaryResponse.status === 429) {
+              throw new Error('OpenRouter API rate limit exceeded');
+            } else {
+              throw new Error(`OpenRouter API error: ${errorMessage}`);
+            }
           }
 
-          if (summaryData.choices && summaryData.choices[0] && summaryData.choices[0].message) {
+          if (summaryData.choices?.[0]?.message?.content) {
             summary = summaryData.choices[0].message.content;
             // Cache the new summary
             await summaryCache.set(videoId, summary);
             console.log('✅ Successfully generated and cached summary');
           } else {
-            console.error('❌ Invalid response format from OpenRouter API');
+            console.error('❌ Invalid response format from OpenRouter API:', JSON.stringify(summaryData, null, 2));
             throw new Error('Invalid response format from OpenRouter API');
           }
         }
       } catch (error) {
-        console.error('❌ Error generating summary:', error);
-        // Don't throw the error, just log it and continue
-        // The frontend will handle the missing summary gracefully
+        console.error('❌ Error generating summary:', error.message);
+        summary = `Error generating summary: ${error.message}`;
       }
     }
     
@@ -269,4 +279,4 @@ router.delete('/summary-cache', async (req, res) => {
   }
 });
 
-export default router; 
+export default router;

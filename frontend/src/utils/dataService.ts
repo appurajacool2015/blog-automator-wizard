@@ -10,7 +10,7 @@ const LOCAL_STORAGE_KEYS = {
   VIDEO_DETAILS: 'blog-automator-video-details',
 };
 
-// Initialize with some example data if none exists
+// Initialize storage if needed
 const initializeStorage = () => {
   if (!localStorage.getItem(LOCAL_STORAGE_KEYS.CATEGORIES)) {
     localStorage.setItem(LOCAL_STORAGE_KEYS.CATEGORIES, JSON.stringify([]));
@@ -136,27 +136,18 @@ export const getVideos = (): Video[] => {
 
 export const getVideosByChannel = (channelId: string): Video[] => {
   const videos = getVideos();
-  console.log('All videos in storage:', videos);
-  console.log('Filtering for channelId:', channelId);
-  const filteredVideos = videos
-    .filter(v => v.channelId === channelId)
-    .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
-  console.log('Filtered videos:', filteredVideos);
-  return filteredVideos;
+  return videos.filter(v => v.channelId === channelId);
 };
 
-export const saveVideos = (videos: Video[]): void => {
-  console.log('Saving new videos:', videos);
+export const addVideos = (newVideos: Video[]): void => {
   const existingVideos = getVideos();
-  console.log('Existing videos:', existingVideos);
   
-  // Find videos that aren't already in the list
-  const newVideos = videos.filter(video => 
-    !existingVideos.some(existing => existing.videoId === video.videoId)
+  // Add only videos that don't already exist (based on videoId)
+  const uniqueNewVideos = newVideos.filter(
+    newVideo => !existingVideos.some(v => v.videoId === newVideo.videoId)
   );
-  console.log('New videos to add:', newVideos);
   
-  const updatedVideos = [...existingVideos, ...newVideos];
+  const updatedVideos = [...existingVideos, ...uniqueNewVideos];
   localStorage.setItem(LOCAL_STORAGE_KEYS.VIDEOS, JSON.stringify(updatedVideos));
   console.log('Updated videos in storage:', updatedVideos);
 };
@@ -176,21 +167,4 @@ export const saveVideoDetails = (details: VideoDetails): void => {
   
   allDetails[details.videoId] = details;
   localStorage.setItem(LOCAL_STORAGE_KEYS.VIDEO_DETAILS, JSON.stringify(allDetails));
-};
-
-// Initialize with some example data if empty
-export const initializeWithExampleData = () => {
-  const categories = getCategories();
-  const channels = getChannels();
-  
-  if (categories.length === 0 && channels.length === 0) {
-    // Add example categories
-    const financeCategory = addCategory('Finance');
-    const techCategory = addCategory('Technology');
-    
-    // Add example channels
-    addChannel('CNBC', 'UCvJJ_dzjViJCoLf5uKUTwoA', financeCategory.id);
-    addChannel('Bloomberg', 'UCIALMKvObZNtJ6AmdCLP7Lg', financeCategory.id);
-    addChannel('TechCrunch', 'UCCjyq_K1Xwfg8Lndy7lKMpA', techCategory.id);
-  }
 };
