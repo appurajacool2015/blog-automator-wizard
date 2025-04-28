@@ -20,6 +20,45 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const port = process.env.PORT || 3005;
 
+// Configure CORS
+const isDevelopment = process.env.NODE_ENV !== 'production';
+console.log('Current environment:', process.env.NODE_ENV);
+console.log('CORS Origin:', process.env.CORS_ORIGIN);
+
+const corsOptions = {
+  origin: function(origin, callback) {
+    const allowedOrigins = isDevelopment
+      ? [
+          'http://localhost:8080',
+          'http://localhost:5173',
+          'http://127.0.0.1:8080',
+          'http://127.0.0.1:5173',
+          'http://localhost:3000',
+          'http://127.0.0.1:3000',
+          'http://localhost:3005',
+          'http://127.0.0.1:3005',
+          undefined,
+          'null'
+        ]
+      : [process.env.CORS_ORIGIN];
+
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('Origin rejected:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
+app.use(express.json());
+
 // Add root route handler
 app.get('/', (req, res) => {
   res.json({
@@ -30,48 +69,12 @@ app.get('/', (req, res) => {
   });
 });
 
-// Configure CORS
-const isDevelopment = process.env.NODE_ENV !== 'production';
-console.log('Current environment:', process.env.NODE_ENV);
-console.log('Is development:', isDevelopment);
-console.log('CORS Origin:', process.env.CORS_ORIGIN);
-
-const allowedOrigins = isDevelopment
-  ? [
-      'http://localhost:8080',
-      'http://localhost:5173',
-      'http://127.0.0.1:8080',
-      'http://127.0.0.1:5173',
-      'http://localhost:3000',
-      'http://127.0.0.1:3000',
-      'http://localhost:3005',
-      'http://127.0.0.1:3005',
-    ]
-  : [
-      'https://sage-baklava-75f4bf.netlify.app',
-      'https://blog-automator-wizard.onrender.com',
-      process.env.CORS_ORIGIN || 'https://sage-baklava-75f4bf.netlify.app'
-    ];
-
-// Apply CORS middleware with proper configuration
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-app.use(express.json());
-
-// No need for additional CORS headers since the cors middleware handles it
-app.options('*', cors());
-
 // Store data in the backend directory
 const dataDir = path.join(__dirname, 'data');
 const channelsFilePath = path.join(dataDir, 'channels.json');
 const transcriptCachePath = path.join(dataDir, 'cache', 'transcripts.json');
 
-// Ensure data directory and files exist
+// Ensure data directory and files exist with proper initial data
 const ensureDataFiles = async () => {
   try {
     // Create data directory if it doesn't exist
@@ -80,11 +83,18 @@ const ensureDataFiles = async () => {
     // Create cache directory if it doesn't exist
     await fs.mkdir(path.join(dataDir, 'cache'), { recursive: true });
     
-    // Create channels.json if it doesn't exist
+    // Create or verify channels.json with proper initial structure
     try {
       await fs.access(channelsFilePath);
-    } catch {
-      await fs.writeFile(channelsFilePath, JSON.stringify({}, null, 2));
+      // Verify file has valid JSON structure
+      const data = await fs.readFile(channelsFilePath, 'utf-8');
+      JSON.parse(data);
+    } catch (error) {
+      // If file doesn't exist or has invalid JSON, create with initial structure
+      await fs.writeFile(channelsFilePath, JSON.stringify({
+        "General": [] // Initial category
+      }, null, 2));
+      console.log('Created channels.json with initial structure');
     }
     
     // Create transcripts.json if it doesn't exist
@@ -95,21 +105,27 @@ const ensureDataFiles = async () => {
     }
   } catch (error) {
     console.error('Error ensuring data files:', error);
+    throw error; // Throw error to prevent server from starting if critical files can't be created
   }
 };
 
-// Initialize data files
-ensureDataFiles();
+// Initialize data files before starting server
+try {
+  await ensureDataFiles();
+  console.log('Data files initialized successfully');
+  
+  // Mount routes
+  app.use('/api/videos', videoRoutes);
+  app.use('/api/transcript', transcriptRoutes);
+  app.use('/api/channels', channelRoutes);
+  app.use('/api/categories', categoryRoutes);
 
-// Mount routes
-app.use('/api/videos', videoRoutes);
-app.use('/api/transcript', transcriptRoutes);
-app.use('/api/channels', channelRoutes);
-app.use('/api/categories', categoryRoutes);
-// app.use('/api/summarize', summaryRoutes);
-
-// Start server
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-  console.log(`Environment: ${process.env.NODE_ENV}`);
-});
+  // Start server
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+    console.log(`Environment: ${process.env.NODE_ENV}`);
+  });
+} catch (error) {
+  console.error('Failed to initialize server:', error);
+  process.exit(1);
+}
