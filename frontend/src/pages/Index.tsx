@@ -1,3 +1,15 @@
+/**
+ * Homepage component that provides the main interface for:
+ * - Selecting categories
+ * - Viewing and reordering channels within categories (via drag and drop)
+ * - Browsing videos within channels
+ * - Viewing video content and transcripts
+ * 
+ * Features:
+ * - Responsive design with separate mobile and desktop layouts
+ * - State management for selected category/channel/video
+ * - Panel-based navigation for mobile view
+ */
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";

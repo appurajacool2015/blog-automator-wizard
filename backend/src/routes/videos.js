@@ -142,7 +142,12 @@ router.get('/:videoId', async (req, res) => {
               'X-Title': 'Blog Automator Wizard'
             },
             body: JSON.stringify({
-              model: 'mistralai/mixtral-8x7b',
+              model: 'deepseek/deepseek-chat-v3-0324:free',
+              // model: 'tngtech/deepseek-r1t-chimera:free',
+              // model: 'deepseek/deepseek-r1:free'
+              // model: 'deepseek/deepseek-chat-v3-0324:free'
+              // model: 'google/gemini-2.0-flash-exp:free'
+              // model: 'google/gemini-2.0-flash-exp:free'
               messages: [
                 {
                   role: 'system',

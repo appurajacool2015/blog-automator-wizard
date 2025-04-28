@@ -1,3 +1,7 @@
+/**
+ * Application entry point
+ * Renders the root Router component inside React.StrictMode for development checks
+ */
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Router } from './router';

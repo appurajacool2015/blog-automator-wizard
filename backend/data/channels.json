@@ -1,6 +1,11 @@
 {
   "AI": [
     {
+      "id": "UClZU5ouD9LkfgrelmL2auTg",
+      "name": "AajTak-AI",
+      "categoryName": "AI"
+    },
+    {
       "id": "UCEzrs7gK6Nf6t_tadEprzxQ",
       "name": "aiwithbrandon",
       "categoryName": "AI"
@@ -13,11 +18,6 @@
     {
       "id": "UCOrS4ObeJ08FmsVG9Fwhmsg",
       "name": "Busy Funda",
-      "categoryName": "AI"
-    },
-    {
-      "id": "UClZU5ouD9LkfgrelmL2auTg",
-      "name": "AajTak-AI",
       "categoryName": "AI"
     },
     {

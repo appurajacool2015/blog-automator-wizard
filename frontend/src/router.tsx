@@ -1,3 +1,13 @@
+/**
+ * Application routing configuration
+ * Defines the main routes and their corresponding components:
+ * - / : Homepage with category/channel/video selection
+ * - /admin: Admin panel for managing categories and channels
+ * - /category/:categoryId: Individual category view
+ * - /channel/:channelId: Individual channel view
+ * - /video/:videoId: Video listing
+ * - /video/:videoId/content: Video content and transcription
+ */
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import App from './App';
 import CategoryList from './components/CategoryList';
@@ -53,4 +63,4 @@ const router = createBrowserRouter([
 
 export const Router = () => {
   return <RouterProvider router={router} />;
-}; 
+};
