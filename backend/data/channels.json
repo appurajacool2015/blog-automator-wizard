@@ -1,6 +1,21 @@
 {
   "AI": [
     {
+      "id": "UC0m81bQuthaQZmFbXEY9QSw",
+      "name": "AICodeKing",
+      "categoryName": "AI"
+    },
+    {
+      "id": "UC7gUrNEKyuqpHsDTY_jVZ7g",
+      "name": "BuYOUTUBE THINK",
+      "categoryName": "AI"
+    },
+    {
+      "id": "UCEzrs7gK6Nf6t_tadEprzxQ",
+      "name": "aiwithbrandon",
+      "categoryName": "AI"
+    },
+    {
       "id": "UClZU5ouD9LkfgrelmL2auTg",
       "name": "AajTak-AI",
       "categoryName": "AI"
@@ -11,18 +26,8 @@
       "categoryName": "AI"
     },
     {
-      "id": "UC7gUrNEKyuqpHsDTY_jVZ7g",
-      "name": "BuYOUTUBE THINK",
-      "categoryName": "AI"
-    },
-    {
       "id": "UCOrS4ObeJ08FmsVG9Fwhmsg",
       "name": "Busy Funda",
-      "categoryName": "AI"
-    },
-    {
-      "id": "UCEzrs7gK6Nf6t_tadEprzxQ",
-      "name": "aiwithbrandon",
       "categoryName": "AI"
     },
     {
@@ -41,11 +46,6 @@
       "categoryName": "AI"
     },
     {
-      "id": "UC0m81bQuthaQZmFbXEY9QSw",
-      "name": "AICodeKing",
-      "categoryName": "AI"
-    },
-    {
       "id": "UCYq9VOkrH3uv7IiWcDKm5zw",
       "name": "BuildWithAI",
       "categoryName": "AI"
@@ -58,6 +58,16 @@
     {
       "id": "UC8-RRjbgkbWzhHqF8K-HWNg",
       "name": "Ritesh Hegde - Your No-Code Partner",
+      "categoryName": "AI"
+    },
+    {
+      "id": "UCJ8YUcoCnwb-Efxav0q0_sg",
+      "name": "Prompt Minds 2.0",
+      "categoryName": "AI"
+    },
+    {
+      "id": "UCG6v_5aFoc4AOipNDzxQOkg",
+      "name": "Harsh Gautam",
       "categoryName": "AI"
     }
   ],
@@ -73,6 +83,10 @@
     {
       "id": "UCqW8jxh4tH1Z1sWPbkGWL4g",
       "name": "Akshat Shrivastava"
+    },
+    {
+      "id": "UCw5TLrz3qADabwezTEcOmgQ",
+      "name": "Groww"
     },
     {
       "id": "UC6miSOTA9k33pwTE5Pd42zQ",
@@ -173,6 +187,28 @@
     {
       "id": "UChYs-_zjKRYhdMddjx-NPLw",
       "name": "SinghinUSA"
+    },
+    {
+      "id": "UCjAKzWYZLayOQfSud0lU1vQ",
+      "name": "Royal Cooking"
+    }    
+  ],
+  "Online Earning": [
+    {
+      "id": "UCUoAidkV8h8TW7gdos9I_4A",
+      "name": "N-Trick"
+    },
+    {
+      "id": "UCLTQ9tAiZANTnBEptTgLuNQ",
+      "name": "Quick Earning"
+    },
+    {
+      "id": "UCvG-MDK3PcyvMWLpj03Bdgw",
+      "name": "New Sanjeev Kumar Jindals"
+    },
+    {
+      "id": "UCUoAidkV8h8TW7gdos9I_4A",
+      "name": "N-Trick"
     }
   ]
 }
