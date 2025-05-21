@@ -7,7 +7,7 @@ import { createRequire } from 'module';
 import dotenv from 'dotenv';
 
 // Import route modules from src directory
-import videoRoutes from './src/routes/videos.js';
+import videoRoutes from './src/routes/videos.mjs';
 import transcriptRoutes from './src/routes/transcript.js';
 import channelRoutes from './src/routes/channels.js';
 import categoryRoutes from './src/routes/categories.js';

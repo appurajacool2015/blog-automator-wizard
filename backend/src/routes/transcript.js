@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 const router = express.Router();
 dotenv.config();
 
+
 // Get transcript for a video
 router.get('/:videoId', async (req, res) => {
   try {
@@ -99,12 +100,90 @@ router.get('/:videoId', async (req, res) => {
 router.delete('/cache', async (req, res) => {
   try {
     console.log('🔄 Clearing transcript cache');
+    
+    // Clear transcript cache
     await transcriptCache.clearAll();
     console.log('✅ Successfully cleared transcript cache');
-    res.status(200).json({ message: 'Transcript cache cleared successfully' });
+    
+    // Clear summary cache
+    await summaryCache.clearAll();
+    console.log('✅ Successfully cleared summary cache');
+
+    res.status(200).json({ 
+      message: 'Transcript and summary caches cleared successfully',
+      cleared: {
+        transcript: true,
+        summary: true
+      }
+    });
   } catch (error) {
     console.error('❌ Error clearing transcript cache:', error);
     res.status(500).json({ error: 'Failed to clear transcript cache' });
+  }
+});
+
+// Clear specific video's transcript and summary cache
+router.delete('/cache/:videoId', async (req, res) => {
+  try {
+    const { videoId } = req.params;
+    console.log(`🔄 Clearing cache for video ID: ${videoId}`);
+    
+    const transcriptsPath = path.join(__dirname, '../../data/cache/transcripts.json');
+    const summariesPath = path.join(__dirname, '../../data/cache/summaries.json');
+    
+    // Read and update transcripts file
+    try {
+      const transcriptsData = JSON.parse(await fs.readFile(transcriptsPath, 'utf8'));
+      if (transcriptsData[videoId]) {
+        delete transcriptsData[videoId];
+        await fs.writeFile(transcriptsPath, JSON.stringify(transcriptsData, null, 2));
+        console.log('✅ Successfully removed transcript from cache file');
+      }
+    } catch (error) {
+      console.error('❌ Error updating transcripts cache file:', error);
+      throw error;
+    }
+
+    // Read and update summaries file  
+    try {
+      const summariesData = JSON.parse(await fs.readFile(summariesPath, 'utf8'));
+      if (summariesData[videoId]) {
+        delete summariesData[videoId];
+        await fs.writeFile(summariesPath, JSON.stringify(summariesData, null, 2));
+        console.log('✅ Successfully removed summary from cache file');
+      }
+    } catch (error) {
+      console.error('❌ Error updating summaries cache file:', error);
+      throw error;
+    }
+
+    // Clear from in-memory caches
+    await transcriptCache.delete(videoId);
+    await summaryCache.delete(videoId);
+    console.log('✅ Successfully cleared in-memory caches');
+
+    res.status(200).json({
+      message: `Cache cleared for video ID: ${videoId}`,
+      cleared: {
+        transcriptFile: true,
+        summaryFile: true,
+        transcriptCache: true,
+        summaryCache: true
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error clearing caches:', error);
+    res.status(500).json({
+      error: 'Failed to clear caches',
+      details: error.message,
+      cleared: {
+        transcriptFile: false,  
+        summaryFile: false,
+        transcriptCache: false,
+        summaryCache: false
+      }
+    });
   }
 });
 

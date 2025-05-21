@@ -81,6 +81,10 @@
       "name": "TradingWithVivek"
     },
     {
+      "id": "UCkGjGT2B7LoDyL2T4pHsUqw",
+      "name": "Financially Free"
+    },
+    {
       "id": "UCqW8jxh4tH1Z1sWPbkGWL4g",
       "name": "Akshat Shrivastava"
     },
@@ -91,6 +95,10 @@
     {
       "id": "UC6miSOTA9k33pwTE5Pd42zQ",
       "name": "PaisaSmart"
+    },
+    {
+      "id": "UCQIRijkQ8zNDe_jR0RhZpVA",
+      "name": "Stock Pro"
     },
     {
       "id": "UCtnItzU7q_bA1eoEBjqcVrw",
@@ -105,16 +113,8 @@
       "name": "SOIC"
     },
     {
-      "id": "UCQIRijkQ8zNDe_jR0RhZpVA",
-      "name": "Stock Pro"
-    },
-    {
       "id": "UCTR2O-hOdd6yhSCsUiD_JIw",
       "name": "Shrija Saha"
-    },
-    {
-      "id": "UCkGjGT2B7LoDyL2T4pHsUqw",
-      "name": "Financially Free"
     },
     {
       "id": "UC79CKmUNEP34qLhEOReQfwA",
@@ -135,6 +135,18 @@
     {
       "id": "UCDzgIFSnfTKqBUbaXsjSQLQ",
       "name": "Financial Freedom"
+    },
+    {
+      "id": "UCu2-GUi2StTsXOcyuiV7lPQ",
+      "name": "Pratik Invest"
+    },
+    {
+      "id": "UCThjBBhkskROR2fZ62KYWIQ",
+      "name": "NK Prabhat Academy"
+    },
+    {
+      "id": "UCLFKCWWw38y4_2JoHFiPj9Q",
+      "name": "Pratik Chauhan"
     }
   ],
   "Bloggers": [
@@ -181,6 +193,14 @@
     {
       "id": "UCXqdkLhS3A5xqiwsdrjkXJw",
       "name": "Technical Israr"
+    },
+    {
+      "id": "UCEizuu289X7yxwLuzKM9k0Q",
+      "name": "Digital Megha Mourya"
+    },
+    {
+      "id": "UCYzWSCOVQdXhw8sFxSsJ7SA",
+      "name": "SANDEEP BLOGGING TIPS"
     }
   ],
   "Business": [
@@ -191,7 +211,7 @@
     {
       "id": "UCjAKzWYZLayOQfSud0lU1vQ",
       "name": "Royal Cooking"
-    }    
+    }
   ],
   "Online Earning": [
     {

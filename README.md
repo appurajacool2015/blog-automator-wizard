@@ -1,5 +1,4 @@
 # Blog Automator Wizard
-
 A tool to automatically generate blog posts from YouTube videos.
 
 ## Table of Contents
@@ -76,10 +75,12 @@ blog-automator-wizard/
 ├── backend/                    # Backend server
 │   ├── src/
 │   │   ├── routes/            # API routes
-│   │   │   ├── videos.js      # Video-related endpoints
+│   │   │   ├── videos.mjs      # Video-related endpoints
 │   │   │   ├── channels.js    # Channel management
 │   │   │   ├── categories.js  # Category management
 │   │   │   └── transcript.js  # Transcript handling
+│   │   ├── utils/             # Local (Ollama & OpenRouter)
+│   │   │   ├── llmClient.js   # Summary of the transcript using AI.
 │   │   ├── cache.js           # Video cache management
 │   │   ├── transcriptCache.js # Transcript caching
 │   │   └── summaryCache.js    # Summary caching
