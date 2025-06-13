@@ -73,12 +73,12 @@
   ],
   "Stocks": [
     {
-      "id": "UCM7yoOhnMcfrEZ-5i9m-WFA",
-      "name": "Sonia Shenoy"
-    },
-    {
       "id": "UCihPYlorLXjroDGnQL17YvQ",
       "name": "TradingWithVivek"
+    },
+    {
+      "id": "UCM7yoOhnMcfrEZ-5i9m-WFA",
+      "name": "Sonia Shenoy"
     },
     {
       "id": "UCkGjGT2B7LoDyL2T4pHsUqw",
@@ -215,20 +215,12 @@
   ],
   "Online Earning": [
     {
-      "id": "UCUoAidkV8h8TW7gdos9I_4A",
-      "name": "N-Trick"
-    },
-    {
       "id": "UCLTQ9tAiZANTnBEptTgLuNQ",
       "name": "Quick Earning"
     },
     {
       "id": "UCvG-MDK3PcyvMWLpj03Bdgw",
       "name": "New Sanjeev Kumar Jindals"
-    },
-    {
-      "id": "UCUoAidkV8h8TW7gdos9I_4A",
-      "name": "N-Trick"
     }
   ]
 }
